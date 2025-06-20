@@ -1,0 +1,70 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>QR Code - LivraisonP2P</title>
+    <meta name="description" content="QR code de suivi LivraisonP2P">
+    <link rel="icon" type="image/x-icon" href="/assets/images/logo-orange.png">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <link href="/css/app-styles.css" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.1.1/css/all.min.css" rel="stylesheet">
+    <style>
+        body { min-height: 100vh; background: var(--bg-secondary); }
+        .qrcode-container { max-width: 420px; margin: 4rem auto; padding: 2rem 1.5rem; }
+        .qrcode-card { background: var(--bg-primary); border-radius: var(--border-radius-lg); box-shadow: var(--shadow-lg); padding: 2.5rem 2rem 2rem 2rem; border: 1px solid var(--border-color); text-align: center; }
+        .qrcode-header { margin-bottom: 1.5rem; }
+        .qrcode-header h1 { font-size: 1.5rem; font-weight: 800; color: var(--primary-color); }
+        .qrcode-img { margin: 1.5rem 0; display: flex; justify-content: center; }
+        .qrcode-img img { width: 180px; height: 180px; border-radius: var(--border-radius-lg); border: 2px solid var(--primary-color); background: #fff; }
+        .qrcode-footer { margin-top: 1.5rem; color: var(--text-secondary); font-size: 0.97rem; }
+        @media (max-width: 600px) { .qrcode-card { padding: 1.5rem 0.5rem; } .qrcode-container { padding: 1rem 0.2rem; } .qrcode-img img { width: 120px; height: 120px; } }
+    </style>
+</head>
+<body>
+    <header class="app-header">
+        <div class="app-container">
+            <nav class="nav-container">
+                <a href="/" class="nav-logo"><img src="/assets/images/logo-orange.png" alt="Logo"> LivraisonP2P</a>
+            </nav>
+        </div>
+    </header>
+    <main>
+        <div class="qrcode-container animate-fade-in">
+            <div class="qrcode-card">
+                <div class="qrcode-header">
+                    <h1>QR Code de suivi</h1>
+                </div>
+                <div class="qrcode-img" id="qrcodeImg">
+                    <!-- QR code sera injecté ici -->
+                </div>
+                <div class="qrcode-footer">
+                    Scannez ce code pour suivre votre livraison en temps réel.
+                </div>
+            </div>
+        </div>
+    </main>
+    <div id="toastContainer"></div>
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <script src="/config.js"></script>
+    <script src="/js/services/supabase.js"></script>
+    <script src="/js/components/toast.js"></script>
+    <script src="/js/modules/auth.js"></script>
+    <script src="/js/modules/qrcode.js"></script>
+    <script>
+        document.addEventListener('DOMContentLoaded', async function() {
+            if (window.AuthModule) {
+                const auth = new window.AuthModule();
+                await auth.checkLogin();
+            }
+            // Génération QR code (démo)
+            const qrcodeDiv = document.getElementById('qrcodeImg');
+            if (window.QRCodeModule) {
+                window.QRCodeModule.render(qrcodeDiv, 'https://livraisonp2p.fr/track/12345');
+            } else {
+                qrcodeDiv.innerHTML = '<img src="https://api.qrserver.com/v1/create-qr-code/?size=180x180&data=https://livraisonp2p.fr/track/12345" alt="QR Code">';
+            }
+        });
+    </script>
+</body>
+</html> 

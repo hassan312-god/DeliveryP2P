@@ -1,0 +1,91 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Chat - LivraisonP2P</title>
+    <meta name="description" content="Messagerie LivraisonP2P">
+    <link rel="icon" type="image/x-icon" href="/assets/images/logo-orange.png">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <link href="/css/app-styles.css" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.1.1/css/all.min.css" rel="stylesheet">
+    <style>
+        body { min-height: 100vh; background: var(--bg-secondary); }
+        .chat-container { max-width: 700px; margin: 2.5rem auto; padding: 1.5rem; display: flex; flex-direction: column; height: 80vh; }
+        .chat-header { text-align: center; margin-bottom: 1.5rem; }
+        .chat-header h1 { font-size: 2rem; font-weight: 800; color: var(--primary-color); }
+        .chat-messages { flex: 1; overflow-y: auto; background: var(--bg-primary); border-radius: var(--border-radius-lg); box-shadow: var(--shadow-lg); border: 1px solid var(--border-color); padding: 1.5rem; margin-bottom: 1rem; display: flex; flex-direction: column; gap: 1rem; }
+        .chat-message { display: flex; gap: 0.7rem; align-items: flex-end; }
+        .chat-message.user { flex-direction: row-reverse; }
+        .chat-bubble { max-width: 70%; padding: 0.8rem 1.1rem; border-radius: 1.2rem; background: var(--primary-color); color: #fff; font-size: 1rem; box-shadow: var(--shadow); }
+        .chat-message.user .chat-bubble { background: var(--secondary-color); color: var(--primary-color); }
+        .chat-avatar { width: 36px; height: 36px; border-radius: 50%; background: var(--bg-secondary); display: flex; align-items: center; justify-content: center; font-size: 1.1rem; font-weight: 700; color: var(--primary-color); }
+        .chat-input-row { display: flex; gap: 0.7rem; }
+        .chat-input { flex: 1; padding: 0.8rem 1rem; border-radius: var(--border-radius); border: 1px solid var(--border-color); font-size: 1rem; }
+        .chat-input:focus { border-color: var(--primary-color); outline: none; }
+        .btn-send { padding: 0.8rem 1.5rem; border-radius: var(--border-radius); background: var(--primary-color); color: #fff; font-weight: 700; border: none; cursor: pointer; transition: background 0.2s; }
+        .btn-send:hover { background: var(--secondary-color); color: var(--primary-color); }
+        @media (max-width: 700px) { .chat-container { padding: 0.5rem; } .chat-messages { padding: 0.7rem; } }
+    </style>
+</head>
+<body>
+    <header class="app-header">
+        <div class="app-container">
+            <nav class="nav-container">
+                <a href="/" class="nav-logo"><img src="/assets/icons/Service_De_Livraison_Avec_Concept_De_Masque___Vecteur_Gratuite-removebg-preview.png" alt="LivraisonP2P Logo"> LivraisonP2P</a>
+            </nav>
+        </div>
+    </header>
+    <main>
+        <div class="chat-container animate-fade-in">
+            <div class="chat-header">
+                <h1>Messagerie</h1>
+            </div>
+            <div class="chat-messages" id="chatMessages">
+                <!-- Les messages seront injectés ici -->
+            </div>
+            <form class="chat-input-row" id="chatForm" autocomplete="off">
+                <input type="text" class="chat-input" id="chatInput" placeholder="Écrire un message..." required />
+                <button type="submit" class="btn-send"><i class="fas fa-paper-plane"></i></button>
+            </form>
+        </div>
+    </main>
+    <div id="toastContainer"></div>
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <script src="/config.js"></script>
+    <script src="/js/services/supabase.js"></script>
+    <script src="/js/components/toast.js"></script>
+    <script src="/js/modules/auth.js"></script>
+    <script>
+        document.addEventListener('DOMContentLoaded', async function() {
+            if (window.AuthModule) {
+                const auth = new window.AuthModule();
+                await auth.checkLogin();
+            }
+            // TODO: Charger les messages depuis l'API
+            const messages = [
+                { user: false, avatar: 'A', text: 'Bonjour, votre colis est en route !' },
+                { user: true, avatar: 'M', text: 'Merci beaucoup !' },
+                { user: false, avatar: 'A', text: 'N'hésitez pas à me contacter si besoin.' }
+            ];
+            const chat = document.getElementById('chatMessages');
+            chat.innerHTML = messages.map(m => `
+                <div class="chat-message${m.user ? ' user' : ''}">
+                    <span class="chat-avatar">${m.avatar}</span>
+                    <span class="chat-bubble">${m.text}</span>
+                </div>
+            `).join('');
+            // Envoi de message (démo)
+            document.getElementById('chatForm').addEventListener('submit', function(e) {
+                e.preventDefault();
+                const input = document.getElementById('chatInput');
+                if (input.value.trim()) {
+                    chat.innerHTML += `<div class='chat-message user'><span class='chat-avatar'>M</span><span class='chat-bubble'>${input.value}</span></div>`;
+                    input.value = '';
+                    chat.scrollTop = chat.scrollHeight;
+                }
+            });
+        });
+    </script>
+</body>
+</html> 

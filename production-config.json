@@ -1,0 +1,139 @@
+{
+  "application": {
+    "name": "LivraisonP2P",
+    "version": "1.0.0",
+    "environment": "production",
+    "url": "http://localhost:8000"
+  },
+  "design": {
+    "harmonized": true,
+    "theme": "modern",
+    "colors": {
+      "primary": "#3B82F6",
+      "secondary": "#667eea",
+      "accent": "#764ba2",
+      "success": "#10B981",
+      "warning": "#F59E0B",
+      "error": "#EF4444"
+    },
+    "typography": {
+      "font": "Inter",
+      "weights": [300, 400, 500, 600, 700, 800]
+    },
+    "animations": {
+      "enabled": true,
+      "duration": "0.3s",
+      "easing": "cubic-bezier(0.4, 0, 0.2, 1)"
+    }
+  },
+  "backend": {
+    "database": "supabase",
+    "authentication": "supabase",
+    "email_service": "smtp",
+    "api_endpoints": {
+      "auth": "/php/auth-api.php",
+      "email": "/php/email-service.php",
+      "qr": "/php/qr-code-generator.php",
+      "admin": "/php/admin-dashboard.php"
+    }
+  },
+  "features": {
+    "authentication": {
+      "enabled": true,
+      "methods": ["email", "google", "facebook"],
+      "email_confirmation": true,
+      "password_reset": true
+    },
+    "email": {
+      "enabled": true,
+      "templates": [
+        "confirmation",
+        "password_reset",
+        "delivery_notification",
+        "payment_confirmation"
+      ]
+    },
+    "qr_codes": {
+      "enabled": true,
+      "generation": true,
+      "scanning": true,
+      "history": true
+    },
+    "notifications": {
+      "enabled": true,
+      "real_time": true,
+      "email": true,
+      "push": false
+    }
+  },
+  "pages": {
+    "auth": {
+      "login": "/auth/login.html",
+      "register": "/auth/register.html",
+      "forgot_password": "/auth/forgot-password.html",
+      "reset_password": "/auth/reset-password.html",
+      "email_confirmation": "/auth/email-confirmation.html",
+      "callback": "/auth/callback.html"
+    },
+    "client": {
+      "dashboard": "/client/dashboard.html",
+      "create_request": "/client/create-request.html",
+      "track_delivery": "/client/track-delivery.html",
+      "history": "/client/history.html",
+      "profile": "/client/profile.html"
+    },
+    "courier": {
+      "dashboard": "/courier/dashboard.html",
+      "available_requests": "/courier/available-requests.html",
+      "active_deliveries": "/courier/active-deliveries.html",
+      "earnings": "/courier/earnings.html",
+      "profile": "/courier/profile.html"
+    },
+    "admin": {
+      "dashboard": "/admin/dashboard.html",
+      "users": "/admin/users.html",
+      "deliveries": "/admin/livraisons.html",
+      "payments": "/admin/paiements.html",
+      "profile": "/admin/profile.html"
+    }
+  },
+  "security": {
+    "csrf_protection": true,
+    "rate_limiting": true,
+    "input_validation": true,
+    "sql_injection_protection": true,
+    "xss_protection": true
+  },
+  "performance": {
+    "caching": true,
+    "minification": true,
+    "compression": true,
+    "cdn": false
+  },
+  "monitoring": {
+    "logs": {
+      "enabled": true,
+      "directory": "logs/",
+      "level": "info"
+    },
+    "metrics": {
+      "enabled": true,
+      "response_time": true,
+      "error_rate": true,
+      "user_activity": true
+    }
+  },
+  "maintenance": {
+    "auto_backup": true,
+    "cleanup_logs": true,
+    "email_queue_processing": true,
+    "session_cleanup": true
+  },
+  "deployment": {
+    "server": "php_builtin",
+    "port": 8000,
+    "host": "localhost",
+    "document_root": ".",
+    "error_reporting": false
+  }
+} 

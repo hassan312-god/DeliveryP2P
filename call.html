@@ -1,0 +1,66 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Appel - LivraisonP2P</title>
+    <meta name="description" content="Appel audio/vidéo LivraisonP2P">
+    <link rel="icon" type="image/x-icon" href="/assets/images/logo-orange.png">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <link href="/css/app-styles.css" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.1.1/css/all.min.css" rel="stylesheet">
+    <style>
+        body { min-height: 100vh; background: var(--bg-secondary); }
+        .call-container { max-width: 420px; margin: 4rem auto; padding: 2rem 1.5rem; }
+        .call-card { background: var(--bg-primary); border-radius: var(--border-radius-lg); box-shadow: var(--shadow-lg); padding: 2.5rem 2rem 2rem 2rem; border: 1px solid var(--border-color); text-align: center; }
+        .call-avatar { width: 80px; height: 80px; border-radius: 50%; background: var(--secondary-color); display: flex; align-items: center; justify-content: center; font-size: 2.5rem; color: var(--primary-color); margin: 0 auto 1rem auto; }
+        .call-name { font-size: 1.3rem; font-weight: 700; color: var(--primary-color); margin-bottom: 0.5rem; }
+        .call-status { color: var(--text-secondary); margin-bottom: 1.5rem; }
+        .call-actions { display: flex; justify-content: center; gap: 1.5rem; margin-top: 1.5rem; }
+        .call-btn { width: 56px; height: 56px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 1.5rem; border: none; cursor: pointer; transition: background 0.2s; }
+        .call-btn.accept { background: #16a34a; color: #fff; }
+        .call-btn.end { background: #dc2626; color: #fff; }
+        .call-btn.mute { background: var(--secondary-color); color: var(--primary-color); }
+        .call-btn:hover { opacity: 0.85; }
+        @media (max-width: 600px) { .call-card { padding: 1.5rem 0.5rem; } .call-container { padding: 1rem 0.2rem; } }
+    </style>
+</head>
+<body>
+    <header class="app-header">
+        <div class="app-container">
+            <nav class="nav-container">
+                <a href="/" class="nav-logo"><img src="/assets/icons/Service_De_Livraison_Avec_Concept_De_Masque___Vecteur_Gratuite-removebg-preview.png" alt="LivraisonP2P Logo"> LivraisonP2P</a>
+            </nav>
+        </div>
+    </header>
+    <main>
+        <div class="call-container animate-fade-in">
+            <div class="call-card">
+                <div class="call-avatar"><i class="fas fa-user"></i></div>
+                <div class="call-name">Paul Livreur</div>
+                <div class="call-status">Appel entrant...</div>
+                <div class="call-actions">
+                    <button class="call-btn accept" title="Accepter"><i class="fas fa-phone"></i></button>
+                    <button class="call-btn end" title="Refuser"><i class="fas fa-phone-slash"></i></button>
+                    <button class="call-btn mute" title="Muet"><i class="fas fa-microphone-slash"></i></button>
+                </div>
+            </div>
+        </div>
+    </main>
+    <div id="toastContainer"></div>
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <script src="/config.js"></script>
+    <script src="/js/services/supabase.js"></script>
+    <script src="/js/components/toast.js"></script>
+    <script src="/js/modules/auth.js"></script>
+    <script>
+        document.addEventListener('DOMContentLoaded', async function() {
+            if (window.AuthModule) {
+                const auth = new window.AuthModule();
+                await auth.checkLogin();
+            }
+            // TODO: Gérer la logique d'appel réelle
+        });
+    </script>
+</body>
+</html> 

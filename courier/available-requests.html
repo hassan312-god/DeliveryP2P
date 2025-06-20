@@ -1,0 +1,80 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Demandes Disponibles - LivraisonP2P</title>
+    <meta name="description" content="Liste des demandes de livraison disponibles pour le livreur">
+    <link rel="icon" type="image/x-icon" href="/assets/images/logo-orange.png">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <link href="/css/app-styles.css" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.1.1/css/all.min.css" rel="stylesheet">
+    <style>
+        body { min-height: 100vh; background: var(--bg-secondary); }
+        .available-container { max-width: 900px; margin: 2.5rem auto; padding: 1.5rem; }
+        .available-header { display: flex; align-items: center; justify-content: space-between; margin-bottom: 2rem; }
+        .available-header h1 { font-size: 2rem; font-weight: 800; color: var(--primary-color); }
+        .available-list { background: var(--bg-primary); border-radius: var(--border-radius-lg); box-shadow: var(--shadow-lg); border: 1px solid var(--border-color); padding: 1.5rem; }
+        .available-item { display: flex; flex-direction: column; gap: 0.5rem; border-bottom: 1px solid var(--border-color); padding: 1rem 0; }
+        .available-item:last-child { border-bottom: none; }
+        .available-item-header { display: flex; align-items: center; justify-content: space-between; }
+        .available-item-title { font-weight: 700; color: var(--primary-color); }
+        .available-item-details { color: var(--text-secondary); font-size: 0.97rem; }
+        .btn-accept { margin-top: 0.5rem; }
+        @media (max-width: 700px) { .available-header { flex-direction: column; gap: 1rem; align-items: flex-start; } .available-container { padding: 0.5rem; } .available-list { padding: 0.7rem; } }
+    </style>
+</head>
+<body>
+    <header class="app-header">
+        <div class="app-container">
+            <nav class="nav-container">
+                <a href="/" class="nav-logo"><img src="/assets/icons/Service_De_Livraison_Avec_Concept_De_Masque___Vecteur_Gratuite-removebg-preview.png" alt="LivraisonP2P Logo" style="height:44px;width:auto;background:#fff;border-radius:50%;box-shadow:0 2px 8px rgba(0,0,0,0.07);border:2px solid #f59e42;padding:2px;object-fit:contain;vertical-align:middle;"> LivraisonP2P</a>
+                <a href="/courier/dashboard.html" class="btn btn-secondary btn-sm">Dashboard</a>
+            </nav>
+        </div>
+    </header>
+    <main>
+        <div class="available-container animate-fade-in">
+            <div class="available-header">
+                <h1>Demandes disponibles</h1>
+            </div>
+            <div class="available-list" id="availableList">
+                <!-- Les éléments de demande seront injectés ici -->
+            </div>
+        </div>
+    </main>
+    <div id="toastContainer"></div>
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <script src="/config.js"></script>
+    <script src="/js/services/supabase.js"></script>
+    <script src="/js/components/toast.js"></script>
+    <script src="/js/modules/auth.js"></script>
+    <script>
+        document.addEventListener('DOMContentLoaded', async function() {
+            if (window.AuthModule) {
+                const auth = new window.AuthModule();
+                const user = await auth.checkLogin();
+                if (!user || auth.currentProfile.role !== 'courier') {
+                    window.location.href = '/auth/login.html';
+                    return;
+                }
+                // TODO: Charger les demandes disponibles depuis l'API
+                const requests = [
+                    { id: 1, title: 'Colis #12347', details: 'Paris → Bordeaux, 2kg, Client: Alice' },
+                    { id: 2, title: 'Colis #12348', details: 'Paris → Nantes, 1.5kg, Client: Bob' }
+                ];
+                const list = document.getElementById('availableList');
+                list.innerHTML = requests.map(item => `
+                    <div class="available-item">
+                        <div class="available-item-header">
+                            <span class="available-item-title">${item.title}</span>
+                        </div>
+                        <div class="available-item-details">${item.details}</div>
+                        <button class="btn btn-primary btn-accept btn-sm"><i class="fas fa-check"></i> Accepter</button>
+                    </div>
+                `).join('');
+            }
+        });
+    </script>
+</body>
+</html> 

@@ -1,0 +1,111 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Dashboard Livreur - LivraisonP2P</title>
+    <meta name="description" content="Tableau de bord livreur LivraisonP2P">
+    <link rel="icon" type="image/x-icon" href="/assets/images/logo-orange.png">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <link href="/css/app-styles.css" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.1.1/css/all.min.css" rel="stylesheet">
+    <style>
+        body { min-height: 100vh; background: var(--bg-secondary); }
+        .dashboard-container { max-width: 1100px; margin: 2.5rem auto; padding: 1.5rem; }
+        .dashboard-header { display: flex; align-items: center; justify-content: space-between; margin-bottom: 2rem; }
+        .dashboard-header h1 { font-size: 2rem; font-weight: 800; color: var(--primary-color); }
+        .dashboard-actions { display: flex; gap: 1rem; }
+        .dashboard-cards { display: grid; grid-template-columns: repeat(auto-fit, minmax(260px, 1fr)); gap: 1.5rem; }
+        .dashboard-card { background: var(--bg-primary); border-radius: var(--border-radius-lg); box-shadow: var(--shadow-lg); padding: 2rem 1.5rem; border: 1px solid var(--border-color); display: flex; flex-direction: column; align-items: flex-start; }
+        .dashboard-card h2 { font-size: 1.2rem; font-weight: 700; color: var(--primary-color); margin-bottom: 0.5rem; }
+        .dashboard-card p { color: var(--text-secondary); margin-bottom: 0.5rem; }
+        .dashboard-card .btn { margin-top: auto; }
+        @media (max-width: 700px) { .dashboard-header { flex-direction: column; gap: 1rem; align-items: flex-start; } .dashboard-container { padding: 0.5rem; } }
+    </style>
+</head>
+<body>
+    <header class="app-header">
+        <div class="app-container">
+            <nav class="nav-container">
+                <a href="/" class="nav-logo"><img src="/assets/icons/Service_De_Livraison_Avec_Concept_De_Masque___Vecteur_Gratuite-removebg-preview.png" alt="LivraisonP2P Logo" style="height:44px;width:auto;background:#fff;border-radius:50%;box-shadow:0 2px 8px rgba(0,0,0,0.07);border:2px solid #f59e42;padding:2px;object-fit:contain;vertical-align:middle;"> LivraisonP2P</a>
+                <a href="/courier/profile.html" class="btn btn-secondary btn-sm">Mon Profil</a>
+            </nav>
+        </div>
+    </header>
+    <main>
+        <div class="dashboard-container animate-fade-in">
+            <div class="dashboard-header">
+                <h1>Bienvenue, <span id="prenomLivreur">Livreur</span> !</h1>
+                <div class="dashboard-actions">
+                    <a href="/courier/available-requests.html" class="btn btn-primary"><i class="fas fa-plus"></i> Nouvelles demandes</a>
+                    <a href="/courier/active-deliveries.html" class="btn btn-outline">Livraisons actives</a>
+                </div>
+            </div>
+            <div class="dashboard-cards">
+                <div class="dashboard-card">
+                    <h2>Livraisons actives</h2>
+                    <canvas id="livraisonsChart" width="220" height="120"></canvas>
+                    <p id="nbActives">0</p>
+                    <a href="/courier/active-deliveries.html" class="btn btn-secondary btn-sm">Voir</a>
+                </div>
+                <div class="dashboard-card">
+                    <h2>Gains</h2>
+                    <div id="mapGains" style="height:120px;border-radius:12px;margin-bottom:0.5rem;"></div>
+                    <p id="nbGains">0 €</p>
+                    <a href="/courier/earnings.html" class="btn btn-secondary btn-sm">Voir mes gains</a>
+                </div>
+            </div>
+        </div>
+    </main>
+    <div id="toastContainer"></div>
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <script src="/config.js"></script>
+    <script src="/js/services/supabase.js"></script>
+    <script src="/js/components/toast.js"></script>
+    <script src="/js/modules/auth.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+    <script>
+        document.addEventListener('DOMContentLoaded', async function() {
+            if (window.AuthModule) {
+                const auth = new window.AuthModule();
+                const user = await auth.checkLogin();
+                if (!user || auth.currentProfile.role !== 'courier') {
+                    window.location.href = '/auth/login.html';
+                    return;
+                }
+                document.getElementById('prenomLivreur').textContent = auth.currentProfile.prenom || 'Livreur';
+                // Charger stats (exemple)
+                // TODO: Remplacer par appel API réel
+                document.getElementById('nbActives').textContent = '3';
+                document.getElementById('nbGains').textContent = '120 €';
+            }
+        });
+        // Chart.js exemple
+        const ctx = document.getElementById('livraisonsChart').getContext('2d');
+        new Chart(ctx, {
+            type: 'line',
+            data: {
+                labels: ['Lun', 'Mar', 'Mer', 'Jeu', 'Ven'],
+                datasets: [{
+                    data: [1, 2, 1, 3, 2],
+                    backgroundColor: 'rgba(245,158,66,0.2)',
+                    borderColor: '#f59e42',
+                    fill: true,
+                    tension: 0.4
+                }]
+            },
+            options: { plugins: { legend: { display: false } } }
+        });
+        // Leaflet.js exemple
+        setTimeout(() => {
+            if (document.getElementById('mapGains')) {
+                const map = L.map('mapGains', { zoomControl: false, attributionControl: false }).setView([48.8566, 2.3522], 11);
+                L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', { maxZoom: 19 }).addTo(map);
+                L.marker([48.8566, 2.3522]).addTo(map);
+            }
+        }, 300);
+    </script>
+</body>
+</html> 

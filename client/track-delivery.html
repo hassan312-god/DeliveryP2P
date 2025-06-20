@@ -1,0 +1,125 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Suivi Livraison - LivraisonP2P</title>
+    <meta name="description" content="Suivi de vos livraisons en temps réel">
+    <link rel="icon" type="image/x-icon" href="/assets/images/logo-orange.png">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <link href="/css/app-styles.css" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.1.1/css/all.min.css" rel="stylesheet">
+    <style>
+        body { min-height: 100vh; background: var(--bg-secondary); }
+        .track-container { max-width: 700px; margin: 2.5rem auto; padding: 1.5rem; }
+        .track-header { text-align: center; margin-bottom: 2rem; }
+        .track-header h1 { font-size: 2rem; font-weight: 800; color: var(--primary-color); }
+        .track-list { background: var(--bg-primary); border-radius: var(--border-radius-lg); box-shadow: var(--shadow-lg); border: 1px solid var(--border-color); padding: 1.5rem; }
+        .track-item { display: flex; flex-direction: column; gap: 0.5rem; border-bottom: 1px solid var(--border-color); padding: 1rem 0; }
+        .track-item:last-child { border-bottom: none; }
+        .track-item-header { display: flex; align-items: center; justify-content: space-between; }
+        .track-item-title { font-weight: 700; color: var(--primary-color); }
+        .track-item-status { font-size: 0.95rem; font-weight: 600; }
+        .status-inprogress { color: #f59e42; }
+        .status-delivered { color: #16a34a; }
+        .status-cancelled { color: #dc2626; }
+        .track-item-details { color: var(--text-secondary); font-size: 0.97rem; }
+        @media (max-width: 700px) { .track-container { padding: 0.5rem; } .track-list { padding: 0.7rem; } }
+    </style>
+</head>
+<body>
+    <header class="app-header">
+        <div class="app-container">
+            <nav class="nav-container">
+                <a href="/" class="nav-logo"><img src="/assets/icons/Service_De_Livraison_Avec_Concept_De_Masque___Vecteur_Gratuite-removebg-preview.png" alt="LivraisonP2P Logo" style="height:44px;width:auto;background:#fff;border-radius:50%;box-shadow:0 2px 8px rgba(0,0,0,0.07);border:2px solid #f59e42;padding:2px;object-fit:contain;vertical-align:middle;"> LivraisonP2P</a>
+                <a href="/client/dashboard.html" class="btn btn-secondary btn-sm">Dashboard</a>
+            </nav>
+        </div>
+    </header>
+    <main>
+        <div class="track-container animate-fade-in">
+            <div class="track-header">
+                <h1>Suivi de mes livraisons</h1>
+            </div>
+            <div class="track-list" id="trackList">
+                <!-- Les éléments de suivi seront injectés ici -->
+                <div id="mapSuivi" style="height:220px;border-radius:12px;margin:1.5rem 0;"></div>
+            </div>
+        </div>
+    </main>
+    <div id="toastContainer"></div>
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <script src="/config.js"></script>
+    <script src="/js/services/supabase.js"></script>
+    <script src="/js/components/toast.js"></script>
+    <script src="/js/modules/auth.js"></script>
+    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+    <script>
+        document.addEventListener('DOMContentLoaded', async function() {
+            if (window.AuthModule) {
+                const auth = new window.AuthModule();
+                const user = await auth.checkLogin();
+                if (!user || auth.currentProfile.role !== 'client') {
+                    window.location.href = '/auth/login.html';
+                    return;
+                }
+                // TODO: Charger le suivi réel depuis l'API
+                const deliveries = [
+                    { id: 1, title: 'Colis #12345', status: 'En cours', statusClass: 'status-inprogress', details: 'Paris → Lyon, 2kg, Livreur: Paul' },
+                    { id: 2, title: 'Colis #12344', status: 'Livré', statusClass: 'status-delivered', details: 'Paris → Marseille, 1.5kg, Livreur: Sarah' },
+                    { id: 3, title: 'Colis #12343', status: 'Annulé', statusClass: 'status-cancelled', details: 'Paris → Lille, 3kg, Livreur: Max' }
+                ];
+                const list = document.getElementById('trackList');
+                list.innerHTML = deliveries.map(item => `
+                    <div class="track-item">
+                        <div class="track-item-header">
+                            <span class="track-item-title">${item.title}</span>
+                            <span class="track-item-status ${item.statusClass}">${item.status}</span>
+                        </div>
+                        <div class="track-item-details">${item.details}</div>
+                    </div>
+                `).join('');
+            }
+        });
+        const livraisonId = 1; // À remplacer dynamiquement selon la livraison suivie
+        let map, group, livreurMarker = null;
+        setTimeout(() => {
+            if (document.getElementById('mapSuivi')) {
+                map = L.map('mapSuivi', { zoomControl: false, attributionControl: false });
+                group = L.featureGroup();
+                // Position simulée du livreur (sera mise à jour en temps réel)
+                let livreurLatLng = [48.8584, 2.2945];
+                livreurMarker = L.marker(livreurLatLng, {icon: L.icon({iconUrl: 'https://cdn-icons-png.flaticon.com/512/684/684908.png', iconSize: [32,32]})}).addTo(map).bindPopup('Livreur');
+                group.addLayer(livreurMarker);
+                // Position du client (géolocalisation navigateur)
+                if (navigator.geolocation) {
+                    navigator.geolocation.getCurrentPosition(function(pos) {
+                        const clientLatLng = [pos.coords.latitude, pos.coords.longitude];
+                        const clientMarker = L.marker(clientLatLng, {icon: L.icon({iconUrl: 'https://cdn-icons-png.flaticon.com/512/149/149071.png', iconSize: [32,32]})}).addTo(map).bindPopup('Vous (client)');
+                        group.addLayer(clientMarker);
+                        map.fitBounds(group.getBounds().pad(0.2));
+                    }, function() {
+                        map.setView(livreurLatLng, 13);
+                    });
+                } else {
+                    map.setView(livreurLatLng, 13);
+                }
+                // --- Supabase Realtime pour la position du livreur ---
+                const supabaseClient = window.supabase || supabase;
+                const channel = supabaseClient
+                  .channel('livraisons')
+                  .on('postgres_changes', { event: 'UPDATE', schema: 'public', table: 'livraisons', filter: `id=eq.${livraisonId}` }, payload => {
+                      // On suppose que la colonne s'appelle position_livreur et contient {latitude, longitude}
+                      const pos = payload.new.position_livreur;
+                      if (pos && livreurMarker) {
+                          livreurMarker.setLatLng([pos.latitude, pos.longitude]);
+                          map.fitBounds(group.getBounds().pad(0.2));
+                      }
+                  })
+                  .subscribe();
+            }
+        }, 300);
+    </script>
+</body>
+</html> 

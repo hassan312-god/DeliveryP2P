@@ -1,0 +1,85 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Historique - LivraisonP2P</title>
+    <meta name="description" content="Historique des livraisons client">
+    <link rel="icon" type="image/x-icon" href="/assets/images/logo-orange.png">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <link href="/css/app-styles.css" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.1.1/css/all.min.css" rel="stylesheet">
+    <style>
+        body { min-height: 100vh; background: var(--bg-secondary); }
+        .history-container { max-width: 900px; margin: 2.5rem auto; padding: 1.5rem; }
+        .history-header { display: flex; align-items: center; justify-content: space-between; margin-bottom: 2rem; }
+        .history-header h1 { font-size: 2rem; font-weight: 800; color: var(--primary-color); }
+        .history-list { background: var(--bg-primary); border-radius: var(--border-radius-lg); box-shadow: var(--shadow-lg); border: 1px solid var(--border-color); padding: 1.5rem; }
+        .history-item { display: flex; flex-direction: column; gap: 0.5rem; border-bottom: 1px solid var(--border-color); padding: 1rem 0; }
+        .history-item:last-child { border-bottom: none; }
+        .history-item-header { display: flex; align-items: center; justify-content: space-between; }
+        .history-item-title { font-weight: 700; color: var(--primary-color); }
+        .history-item-status { font-size: 0.95rem; font-weight: 600; }
+        .status-success { color: #16a34a; }
+        .status-failed { color: #dc2626; }
+        .status-pending { color: #f59e42; }
+        .history-item-details { color: var(--text-secondary); font-size: 0.97rem; }
+        @media (max-width: 700px) { .history-header { flex-direction: column; gap: 1rem; align-items: flex-start; } .history-container { padding: 0.5rem; } .history-list { padding: 0.7rem; } }
+    </style>
+</head>
+<body>
+    <header class="app-header">
+        <div class="app-container">
+            <nav class="nav-container">
+                <a href="/" class="nav-logo"><img src="/assets/icons/Service_De_Livraison_Avec_Concept_De_Masque___Vecteur_Gratuite-removebg-preview.png" alt="LivraisonP2P Logo" style="height:44px;width:auto;background:#fff;border-radius:50%;box-shadow:0 2px 8px rgba(0,0,0,0.07);border:2px solid #f59e42;padding:2px;object-fit:contain;vertical-align:middle;"> LivraisonP2P</a>
+                <a href="/client/dashboard.html" class="btn btn-secondary btn-sm">Dashboard</a>
+            </nav>
+        </div>
+    </header>
+    <main>
+        <div class="history-container animate-fade-in">
+            <div class="history-header">
+                <h1>Historique des livraisons</h1>
+                <a href="/client/create-request.html" class="btn btn-primary btn-sm"><i class="fas fa-plus"></i> Nouvelle demande</a>
+            </div>
+            <div class="history-list" id="historyList">
+                <!-- Les éléments d'historique seront injectés ici -->
+            </div>
+        </div>
+    </main>
+    <div id="toastContainer"></div>
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <script src="/config.js"></script>
+    <script src="/js/services/supabase.js"></script>
+    <script src="/js/components/toast.js"></script>
+    <script src="/js/modules/auth.js"></script>
+    <script>
+        document.addEventListener('DOMContentLoaded', async function() {
+            if (window.AuthModule) {
+                const auth = new window.AuthModule();
+                const user = await auth.checkLogin();
+                if (!user || auth.currentProfile.role !== 'client') {
+                    window.location.href = '/auth/login.html';
+                    return;
+                }
+                // TODO: Charger l'historique réel depuis l'API
+                const history = [
+                    { id: 1, title: 'Colis #12345', status: 'Livré', statusClass: 'status-success', details: 'Paris → Lyon, 2kg, 12/04/2024' },
+                    { id: 2, title: 'Colis #12344', status: 'Échec', statusClass: 'status-failed', details: 'Paris → Marseille, 1.5kg, 10/04/2024' },
+                    { id: 3, title: 'Colis #12343', status: 'En attente', statusClass: 'status-pending', details: 'Paris → Lille, 3kg, 09/04/2024' }
+                ];
+                const list = document.getElementById('historyList');
+                list.innerHTML = history.map(item => `
+                    <div class="history-item">
+                        <div class="history-item-header">
+                            <span class="history-item-title">${item.title}</span>
+                            <span class="history-item-status ${item.statusClass}">${item.status}</span>
+                        </div>
+                        <div class="history-item-details">${item.details}</div>
+                    </div>
+                `).join('');
+            }
+        });
+    </script>
+</body>
+</html> 

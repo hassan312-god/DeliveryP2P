@@ -1,0 +1,46 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Connexion OAuth - LivraisonP2P</title>
+    <meta name="description" content="Connexion via un fournisseur externe LivraisonP2P">
+    <link rel="icon" type="image/x-icon" href="/assets/images/logo-orange.png">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <link href="/css/app-styles.css" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.1.1/css/all.min.css" rel="stylesheet">
+    <style>
+        body { min-height: 100vh; background: var(--bg-secondary); display: flex; align-items: center; justify-content: center; }
+        .callback-container { width: 100%; max-width: 400px; margin: 2rem auto; padding: 2rem 1.5rem; }
+        .callback-card { background: var(--bg-primary); border-radius: var(--border-radius-lg); box-shadow: var(--shadow-lg); padding: 2.5rem 2rem 2rem 2rem; border: 1px solid var(--border-color); }
+        .callback-header { text-align: center; margin-bottom: 2rem; }
+        .callback-header img { width: 48px; margin-bottom: 0.5rem; }
+        .callback-header h1 { font-size: 1.5rem; font-weight: 800; margin-bottom: 0.25rem; color: var(--primary-color); }
+        .callback-header p { color: var(--text-secondary); margin-bottom: 0; }
+        .btn { width: 100%; margin-top: 0.5rem; }
+        .callback-footer { text-align: center; margin-top: 2rem; font-size: 0.95rem; }
+        .callback-footer a { color: var(--primary-color); font-weight: 600; }
+        @media (max-width: 600px) { .callback-card { padding: 1.5rem 0.5rem; } .callback-container { padding: 1rem 0.2rem; } }
+    </style>
+</head>
+<body>
+    <div class="callback-container animate-fade-in">
+        <div class="callback-card">
+            <div class="callback-header">
+                <img src="/assets/icons/Service_De_Livraison_Avec_Concept_De_Masque___Vecteur_Gratuite-removebg-preview.png" alt="LivraisonP2P Logo" style="height:44px;width:auto;background:#fff;border-radius:50%;box-shadow:0 2px 8px rgba(0,0,0,0.07);border:2px solid #f59e42;padding:2px;object-fit:contain;vertical-align:middle;">
+                <h1>Connexion en cours...</h1>
+                <p>Merci de patienter pendant la connexion à votre compte.</p>
+            </div>
+            <div class="callback-footer">
+                <a href="/auth/login.html">Retour à la connexion</a><br>
+                <a href="/" style="display:inline-block;margin-top:1rem;"><i class="fas fa-arrow-left"></i> Accueil</a>
+            </div>
+        </div>
+    </div>
+    <div id="toastContainer"></div>
+    <script src="/js/modules/auth.js"></script>
+    <script>
+        // Ici, on peut ajouter une animation de chargement ou une logique de redirection si besoin
+    </script>
+</body>
+</html> 

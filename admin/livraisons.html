@@ -1,0 +1,99 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Livraisons - LivraisonP2P</title>
+    <meta name="description" content="Gestion des livraisons administrateur LivraisonP2P">
+    <link rel="icon" type="image/x-icon" href="/assets/images/logo-orange.png">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <link href="/css/app-styles.css" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.1.1/css/all.min.css" rel="stylesheet">
+    <style>
+        body { min-height: 100vh; background: var(--bg-secondary); }
+        .livraisons-container { max-width: 1000px; margin: 2.5rem auto; padding: 1.5rem; }
+        .livraisons-header { display: flex; align-items: center; justify-content: space-between; margin-bottom: 2rem; }
+        .livraisons-header h1 { font-size: 2rem; font-weight: 800; color: var(--primary-color); }
+        .livraisons-list { background: var(--bg-primary); border-radius: var(--border-radius-lg); box-shadow: var(--shadow-lg); border: 1px solid var(--border-color); padding: 1.5rem; }
+        .livraisons-table { width: 100%; border-collapse: collapse; }
+        .livraisons-table th, .livraisons-table td { padding: 0.75rem 0.5rem; text-align: left; border-bottom: 1px solid var(--border-color); }
+        .livraisons-table th { color: var(--primary-color); font-weight: 700; background: var(--bg-secondary); }
+        .livraisons-table td { color: var(--text-primary); }
+        .livraisons-table tr:last-child td { border-bottom: none; }
+        .btn-action { margin-right: 0.5rem; }
+        @media (max-width: 900px) { .livraisons-container { padding: 0.5rem; } .livraisons-list { padding: 0.7rem; } .livraisons-table th, .livraisons-table td { font-size: 0.95rem; } }
+        @media (max-width: 600px) { .livraisons-table, .livraisons-table thead, .livraisons-table tbody, .livraisons-table th, .livraisons-table td, .livraisons-table tr { display: block; width: 100%; } .livraisons-table th { display: none; } .livraisons-table td { border: none; padding: 0.5rem 0; } .livraisons-table tr { margin-bottom: 1.2rem; border-bottom: 1px solid var(--border-color); } }
+    </style>
+</head>
+<body>
+    <header class="app-header">
+        <div class="app-container">
+            <nav class="nav-container">
+                <a href="/" class="nav-logo"><img src="/assets/icons/Service_De_Livraison_Avec_Concept_De_Masque___Vecteur_Gratuite-removebg-preview.png" alt="LivraisonP2P Logo" style="height:44px;width:auto;background:#fff;border-radius:50%;box-shadow:0 2px 8px rgba(0,0,0,0.07);border:2px solid #f59e42;padding:2px;object-fit:contain;vertical-align:middle;"> LivraisonP2P</a>
+                <a href="/admin/dashboard.html" class="btn btn-secondary btn-sm">Dashboard</a>
+            </nav>
+        </div>
+    </header>
+    <main>
+        <div class="livraisons-container animate-fade-in">
+            <div class="livraisons-header">
+                <h1>Gestion des livraisons</h1>
+            </div>
+            <div class="livraisons-list">
+                <table class="livraisons-table" id="livraisonsTable">
+                    <thead>
+                        <tr>
+                            <th>Colis</th>
+                            <th>Client</th>
+                            <th>Livreur</th>
+                            <th>Statut</th>
+                            <th>Date</th>
+                            <th>Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <!-- Les livraisons seront injectées ici -->
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </main>
+    <div id="toastContainer"></div>
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <script src="/config.js"></script>
+    <script src="/js/services/supabase.js"></script>
+    <script src="/js/components/toast.js"></script>
+    <script src="/js/modules/auth.js"></script>
+    <script>
+        document.addEventListener('DOMContentLoaded', async function() {
+            if (window.AuthModule) {
+                const auth = new window.AuthModule();
+                const user = await auth.checkLogin();
+                if (!user || auth.currentProfile.role !== 'admin') {
+                    window.location.href = '/auth/login.html';
+                    return;
+                }
+                // TODO: Charger les livraisons depuis l'API
+                const livraisons = [
+                    { id: 1, colis: 'Colis #12345', client: 'Alice', livreur: 'Paul', statut: 'Livré', date: '12/04/2024' },
+                    { id: 2, colis: 'Colis #12344', client: 'Bob', livreur: 'Sarah', statut: 'En cours', date: '13/04/2024' }
+                ];
+                const tbody = document.getElementById('livraisonsTable').querySelector('tbody');
+                tbody.innerHTML = livraisons.map(liv => `
+                    <tr>
+                        <td>${liv.colis}</td>
+                        <td>${liv.client}</td>
+                        <td>${liv.livreur}</td>
+                        <td>${liv.statut}</td>
+                        <td>${liv.date}</td>
+                        <td>
+                            <button class="btn btn-primary btn-action btn-sm"><i class="fas fa-edit"></i></button>
+                            <button class="btn btn-danger btn-action btn-sm"><i class="fas fa-trash"></i></button>
+                        </td>
+                    </tr>
+                `).join('');
+            }
+        });
+    </script>
+</body>
+</html> 

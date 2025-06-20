@@ -1,0 +1,251 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Paiement - LivraisonP2P</title>
+    <meta name="description" content="Paiement sécurisé LivraisonP2P par mobile money ou carte bancaire">
+    <link rel="icon" type="image/x-icon" href="/assets/icons/Service_De_Livraison_Avec_Concept_De_Masque___Vecteur_Gratuite-removebg-preview.png">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <link href="/css/app-styles.css" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.1.1/css/all.min.css" rel="stylesheet">
+    <style>
+        body { min-height: 100vh; background: var(--bg-secondary); }
+        .payment-container { max-width: 480px; margin: 3rem auto; padding: 2rem 1.5rem; }
+        .payment-card { background: var(--bg-primary); border-radius: var(--border-radius-lg); box-shadow: var(--shadow-lg); padding: 2.5rem 2rem 2rem 2rem; border: 1px solid var(--border-color); }
+        .payment-header { text-align: center; margin-bottom: 2rem; }
+        .payment-header img { height: 44px; background: #fff; border-radius: 50%; box-shadow: 0 2px 8px rgba(0,0,0,0.07); border: 2px solid #f59e42; padding: 2px; object-fit: contain; vertical-align: middle; }
+        .payment-header h1 { font-size: 1.5rem; font-weight: 800; margin-bottom: 0.25rem; color: var(--primary-color); }
+        .form-group { margin-bottom: 1.25rem; }
+        .form-label { font-weight: 600; color: var(--text-primary); margin-bottom: 0.5rem; display: block; }
+        .form-input, .form-select { width: 100%; padding: 0.75rem 1rem; border-radius: var(--border-radius); border: 1px solid var(--border-color); font-size: 1rem; }
+        .form-input:focus, .form-select:focus { border-color: var(--primary-color); outline: none; }
+        .btn { width: 100%; margin-top: 0.5rem; }
+        .payment-footer { text-align: center; margin-top: 2rem; font-size: 0.95rem; }
+        .payment-footer a { color: var(--primary-color); font-weight: 600; }
+        .payment-methods { display: flex; gap: 0.7rem; margin-bottom: 1.2rem; justify-content: center; }
+        .payment-method { border: 2px solid var(--border-color); border-radius: 12px; padding: 0.5rem 1rem; background: #fff; cursor: pointer; display: flex; align-items: center; gap: 0.5rem; transition: border 0.2s; }
+        .payment-method.selected { border-color: var(--primary-color); background: #fef3c7; }
+        .payment-method img { height: 28px; }
+        @media (max-width: 600px) { .payment-card { padding: 1.5rem 0.5rem; } .payment-container { padding: 1rem 0.2rem; } }
+    </style>
+</head>
+<body>
+    <header class="app-header">
+        <div class="app-container">
+            <nav class="nav-container">
+                <a href="/" class="nav-logo"><img src="/assets/icons/Service_De_Livraison_Avec_Concept_De_Masque___Vecteur_Gratuite-removebg-preview.png" alt="LivraisonP2P Logo" style="height:44px;width:auto;background:#fff;border-radius:50%;box-shadow:0 2px 8px rgba(0,0,0,0.07);border:2px solid #f59e42;padding:2px;object-fit:contain;vertical-align:middle;"> LivraisonP2P</a>
+            </nav>
+        </div>
+    </header>
+    <main>
+        <div class="payment-container animate-fade-in">
+            <div class="payment-card">
+                <div class="payment-header">
+                    <img src="/assets/icons/Service_De_Livraison_Avec_Concept_De_Masque___Vecteur_Gratuite-removebg-preview.png" alt="LivraisonP2P Logo">
+                    <h1>Paiement</h1>
+                    <p>Sélectionnez votre moyen de paiement</p>
+                </div>
+                <div class="payment-methods" id="paymentMethods">
+                    <div class="payment-method selected" data-method="orange">
+                        <img src="https://images.pexels.com/photos/164501/pexels-photo-164501.jpeg?auto=compress&w=40&h=40&fit=crop" alt="Orange Money" style="border-radius:8px;"> Orange
+                    </div>
+                    <div class="payment-method" data-method="wave">
+                        <img src="https://images.pexels.com/photos/164501/pexels-photo-164501.jpeg?auto=compress&w=40&h=40&fit=crop" alt="Wave" style="border-radius:8px;"> Wave
+                    </div>
+                    <div class="payment-method" data-method="djamo">
+                        <img src="https://images.pexels.com/photos/164501/pexels-photo-164501.jpeg?auto=compress&w=40&h=40&fit=crop" alt="Djamo" style="border-radius:8px;"> Djamo
+                    </div>
+                    <div class="payment-method" data-method="senela">
+                        <img src="https://images.pexels.com/photos/164501/pexels-photo-164501.jpeg?auto=compress&w=40&h=40&fit=crop" alt="Senela" style="border-radius:8px;"> Senela
+                    </div>
+                    <div class="payment-method" data-method="bank">
+                        <img src="https://images.pexels.com/photos/164501/pexels-photo-164501.jpeg?auto=compress&w=40&h=40&fit=crop" alt="Compte bancaire" style="border-radius:8px;"> Compte bancaire
+                    </div>
+                </div>
+                <form id="paymentForm">
+                    <div class="form-group">
+                        <label for="amount" class="form-label">Montant à payer</label>
+                        <input type="number" id="amount" name="amount" class="form-input" min="1" required>
+                        <div class="error-message" id="errorAmount"></div>
+                    </div>
+                    <div id="formMobileMoney">
+                        <div class="form-group">
+                            <label for="phone" class="form-label">Numéro de téléphone</label>
+                            <div style="display:flex;align-items:center;gap:0.5rem;">
+                                <span style="font-size:1.3rem;color:#f59e42;"><i class="fas fa-mobile-alt"></i></span>
+                                <input type="tel" id="phone" name="phone" class="form-input" required placeholder="ex: 77 123 45 67" style="flex:1;">
+                            </div>
+                            <div class="error-message" id="errorPhone"></div>
+                        </div>
+                    </div>
+                    <div id="formCard" style="display:none;">
+                        <div class="card-visual" id="cardVisual" style="background:linear-gradient(135deg,#f59e42 60%,#fff 100%);border-radius:18px;padding:1.2rem 1.5rem 1rem 1.5rem;box-shadow:0 4px 16px rgba(0,0,0,0.08);margin-bottom:1.2rem;min-width:280px;max-width:340px;margin-left:auto;margin-right:auto;position:relative;">
+                            <div style="display:flex;justify-content:space-between;align-items:center;">
+                                <span style="font-weight:700;color:#fff;font-size:1.1rem;">LivraisonP2P</span>
+                                <img src="https://images.pexels.com/photos/164501/pexels-photo-164501.jpeg?auto=compress&w=40&h=40&fit=crop" alt="Bank" style="height:28px;border-radius:6px;">
+                            </div>
+                            <div id="cardVisualNumber" style="margin:1.2rem 0 0.7rem 0;font-size:1.3rem;letter-spacing:2px;color:#fff;font-family:'Courier New',monospace;">•••• •••• •••• ••••</div>
+                            <div style="display:flex;justify-content:space-between;align-items:center;">
+                                <div>
+                                    <div style="font-size:0.7rem;color:#fff;opacity:0.7;">Titulaire</div>
+                                    <div id="cardVisualName" style="font-size:1rem;color:#fff;">NOM PRÉNOM</div>
+                                </div>
+                                <div>
+                                    <div style="font-size:0.7rem;color:#fff;opacity:0.7;">Exp.</div>
+                                    <div id="cardVisualExp" style="font-size:1rem;color:#fff;">MM/AA</div>
+                                </div>
+                                <div>
+                                    <div style="font-size:0.7rem;color:#fff;opacity:0.7;">CVC</div>
+                                    <div id="cardVisualCVC" style="font-size:1rem;color:#fff;">•••</div>
+                                </div>
+                            </div>
+                            <img src="https://upload.wikimedia.org/wikipedia/commons/0/04/Visa.svg" alt="Visa" style="height:24px;position:absolute;bottom:1rem;right:1.5rem;">
+                        </div>
+                        <div class="form-group" style="display:flex;gap:1rem;align-items:center;">
+                            <div style="flex:1;">
+                                <label for="cardExp" class="form-label">Expiration</label>
+                                <input type="text" id="cardExp" name="cardExp" class="form-input" maxlength="5" placeholder="MM/AA" inputmode="numeric" autocomplete="cc-exp">
+                                <div class="error-message" id="errorCardExp"></div>
+                            </div>
+                            <div style="flex:1;position:relative;">
+                                <label for="cardCVC" class="form-label">CVC</label>
+                                <input type="password" id="cardCVC" name="cardCVC" class="form-input" maxlength="4" placeholder="123" inputmode="numeric" autocomplete="cc-csc" style="padding-right:2.2rem;">
+                                <span id="toggleCVC" style="position:absolute;right:0.7rem;top:2.2rem;cursor:pointer;color:#aaa;"><i class="fas fa-eye"></i></span>
+                                <div class="error-message" id="errorCardCVC"></div>
+                            </div>
+                        </div>
+                    </div>
+                    <button type="submit" class="btn btn-primary btn-lg"><i class="fas fa-credit-card"></i> Payer</button>
+                </form>
+                <div class="payment-footer">
+                    <a href="/client/dashboard.html"><i class="fas fa-arrow-left"></i> Retour au dashboard</a>
+                </div>
+            </div>
+        </div>
+    </main>
+    <div id="toastContainer"></div>
+    <script src="/js/components/toast.js"></script>
+    <script>
+        function updatePaymentForm() {
+            const method = document.querySelector('.payment-method.selected').dataset.method;
+            if (method === 'djamo' || method === 'bank') {
+                document.getElementById('formMobileMoney').style.display = 'none';
+                document.getElementById('formCard').style.display = '';
+                document.getElementById('cardNumber').required = true;
+                document.getElementById('cardExp').required = true;
+                document.getElementById('cardCVC').required = true;
+                document.getElementById('phone').required = false;
+            } else {
+                document.getElementById('formMobileMoney').style.display = '';
+                document.getElementById('formCard').style.display = 'none';
+                document.getElementById('phone').required = true;
+                document.getElementById('cardNumber').required = false;
+                document.getElementById('cardExp').required = false;
+                document.getElementById('cardCVC').required = false;
+            }
+        }
+        document.querySelectorAll('.payment-method').forEach(el => {
+            el.addEventListener('click', function() {
+                document.querySelectorAll('.payment-method').forEach(m => m.classList.remove('selected'));
+                this.classList.add('selected');
+                updatePaymentForm();
+            });
+        });
+        updatePaymentForm();
+        // UX : afficher/masquer le CVC
+        const cvcInput = document.getElementById('cardCVC');
+        const toggleCVC = document.getElementById('toggleCVC');
+        if (toggleCVC) {
+            toggleCVC.addEventListener('click', function() {
+                if (cvcInput.type === 'password') {
+                    cvcInput.type = 'text';
+                    toggleCVC.innerHTML = '<i class="fas fa-eye-slash"></i>';
+                } else {
+                    cvcInput.type = 'password';
+                    toggleCVC.innerHTML = '<i class="fas fa-eye"></i>';
+                }
+            });
+        }
+        // Validation avancée
+        function luhnCheck(num) {
+            let arr = (num + '').split('').reverse().map(x => parseInt(x));
+            let sum = arr.reduce((acc, val, idx) => acc + (idx % 2 ? ((val *= 2) > 9 ? val - 9 : val) : val), 0);
+            return sum % 10 === 0;
+        }
+        function validateCardNumber(value) {
+            const clean = value.replace(/\D/g, '');
+            if (clean.length !== 16) return 'Le numéro doit comporter 16 chiffres';
+            if (!luhnCheck(clean)) return 'Numéro de carte invalide';
+            return '';
+        }
+        function validateCardExp(value) {
+            if (!/^\d{2}\/\d{2}$/.test(value)) return 'Format MM/AA attendu';
+            const [mm, aa] = value.split('/').map(Number);
+            if (mm < 1 || mm > 12) return 'Mois invalide';
+            const now = new Date();
+            const year = 2000 + aa;
+            if (year < now.getFullYear() || (year === now.getFullYear() && mm < now.getMonth() + 1)) return 'Carte expirée';
+            return '';
+        }
+        function validateCardCVC(value) {
+            if (!/^\d{3,4}$/.test(value)) return 'CVC invalide';
+            return '';
+        }
+        function validatePhone(value) {
+            const clean = value.replace(/\D/g, '');
+            if (clean.length < 8 || clean.length > 14) return 'Numéro invalide';
+            return '';
+        }
+        // Formatage auto numéro carte
+        const cardNumberInput = document.getElementById('cardNumber');
+        if (cardNumberInput) {
+            cardNumberInput.addEventListener('input', function(e) {
+                let val = this.value.replace(/\D/g, '').slice(0, 16);
+                this.value = val.replace(/(.{4})/g, '$1 ').trim();
+            });
+        }
+        // Synchronisation carte visuelle
+        function syncCardVisual() {
+            const num = document.getElementById('cardNumber').value || '';
+            document.getElementById('cardVisualNumber').textContent = num.padEnd(19, '•');
+            const exp = document.getElementById('cardExp').value || '';
+            document.getElementById('cardVisualExp').textContent = exp || 'MM/AA';
+            const cvc = document.getElementById('cardCVC').value || '';
+            document.getElementById('cardVisualCVC').textContent = cvc.replace(/./g, '•') || '•••';
+            // Nom titulaire (optionnel)
+            document.getElementById('cardVisualName').textContent = 'NOM PRÉNOM';
+        }
+        ['cardNumber','cardExp','cardCVC'].forEach(id => {
+            const el = document.getElementById(id);
+            if (el) el.addEventListener('input', syncCardVisual);
+        });
+        syncCardVisual();
+        // Validation au submit
+        const paymentForm = document.getElementById('paymentForm');
+        paymentForm.addEventListener('submit', function(e) {
+            let valid = true;
+            // Reset errors
+            document.querySelectorAll('.error-message').forEach(el => el.textContent = '');
+            const method = document.querySelector('.payment-method.selected').dataset.method;
+            if (method === 'djamo' || method === 'bank') {
+                const cardNumber = cardNumberInput.value;
+                const cardExp = document.getElementById('cardExp').value;
+                const cardCVC = document.getElementById('cardCVC').value;
+                let err;
+                err = validateCardNumber(cardNumber); if (err) { document.getElementById('errorCardNumber').textContent = err; valid = false; }
+                err = validateCardExp(cardExp); if (err) { document.getElementById('errorCardExp').textContent = err; valid = false; }
+                err = validateCardCVC(cardCVC); if (err) { document.getElementById('errorCardCVC').textContent = err; valid = false; }
+            } else {
+                const phone = document.getElementById('phone').value;
+                let err = validatePhone(phone); if (err) { document.getElementById('errorPhone').textContent = err; valid = false; }
+            }
+            if (!valid) {
+                e.preventDefault();
+                return false;
+            }
+            // ... suite du paiement ...
+        });
+    </script>
+</body>
+</html> 

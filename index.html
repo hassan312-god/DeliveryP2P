@@ -25,19 +25,58 @@
     ================================================== -->
     <header class="app-header">
         <div class="app-container">
-            <nav class="nav-container">
-                <a href="/" class="nav-logo"><img src="./assets/icons/Service_De_Livraison_Avec_Concept_De_Masque___Vecteur_Gratuite-removebg-preview.png" alt="LivraisonP2P Logo" style="height:44px;width:auto;background:#fff;border-radius:50%;box-shadow:0 2px 8px rgba(0,0,0,0.07);border:2px solid #f59e42;padding:2px;object-fit:contain;vertical-align:middle;"> LivraisonP2P</a>
-                
-                <ul class="nav-menu">
+            <nav class="nav-container" style="display: flex; align-items: center; justify-content: space-between; position: relative;">
+                <a href="/" class="nav-logo" style="display: flex; align-items: center; gap: 0.5rem;">
+                    <img src="./assets/icons/Service_De_Livraison_Avec_Concept_De_Masque___Vecteur_Gratuite-removebg-preview.png" alt="LivraisonP2P Logo" style="height:44px;width:auto;background:#fff;border-radius:50%;box-shadow:0 2px 8px rgba(0,0,0,0.07);border:2px solid #f59e42;padding:2px;object-fit:contain;vertical-align:middle;">
+                    <span style="font-weight: bold; font-size: 1.2rem; color: var(--primary-color);">LivraisonP2P</span>
+                </a>
+                <button class="nav-toggle" aria-label="Ouvrir le menu" style="background: none; border: none; font-size: 2rem; display: none; cursor: pointer; color: var(--primary-color);">
+                    <i class="fas fa-bars"></i>
+                </button>
+                <ul class="nav-menu" style="display: flex; gap: 1.5rem; align-items: center; margin: 0; padding: 0; list-style: none;">
                     <li><a href="#home" class="nav-link active">Home</a></li>
                     <li><a href="#services" class="nav-link">Services</a></li>
                     <li><a href="#about" class="nav-link">Notre agence</a></li>
                     <li><a href="#contact" class="nav-link">Contact</a></li>
                 </ul>
-
-                <a href="/auth/register.html" class="btn btn-primary btn-sm">S'inscrire</a>
+                <a href="/auth/register.html" class="btn btn-primary btn-sm" style="margin-left: 1rem;">S'inscrire</a>
             </nav>
         </div>
+        <style>
+            @media (max-width: 900px) {
+                .nav-menu {
+                    display: none !important;
+                    position: absolute;
+                    top: 60px;
+                    left: 0;
+                    right: 0;
+                    background: #fff;
+                    flex-direction: column;
+                    gap: 0;
+                    box-shadow: 0 4px 16px rgba(0,0,0,0.07);
+                    z-index: 100;
+                }
+                .nav-menu.open {
+                    display: flex !important;
+                }
+                .nav-toggle {
+                    display: block !important;
+                }
+            }
+        </style>
+        <script>
+            document.addEventListener('DOMContentLoaded', function() {
+                const navToggle = document.querySelector('.nav-toggle');
+                const navMenu = document.querySelector('.nav-menu');
+                navToggle.addEventListener('click', function() {
+                    navMenu.classList.toggle('open');
+                });
+                // Fermer le menu au clic sur un lien (mobile)
+                navMenu.querySelectorAll('a').forEach(link => {
+                    link.addEventListener('click', () => navMenu.classList.remove('open'));
+                });
+            });
+        </script>
     </header>
 
     <main>

@@ -232,6 +232,35 @@
             }
         });
     </script>
+    <script>
+    document.addEventListener('DOMContentLoaded', function() {
+      const form = document.getElementById('loginForm');
+      if (form && window.AuthModule) {
+        form.addEventListener('submit', async function(e) {
+          e.preventDefault();
+          document.getElementById('emailError').textContent = '';
+          document.getElementById('passwordError').textContent = '';
+          const email = document.getElementById('email').value;
+          const password = document.getElementById('password').value;
+          const auth = new window.AuthModule();
+          const result = await auth.login(email, password);
+          if (!result.success) {
+            if (result.error && result.error.toLowerCase().includes('email')) {
+              document.getElementById('emailError').textContent = result.error;
+            } else {
+              document.getElementById('passwordError').textContent = result.error || 'Erreur de connexion.';
+            }
+          } else {
+            // Redirection selon le rôle
+            let dashboard = '/client/dashboard.html';
+            if (result.profile && result.profile.role === 'admin') dashboard = '/admin/dashboard.html';
+            if (result.profile && result.profile.role === 'courier') dashboard = '/courier/dashboard.html';
+            window.location.href = dashboard;
+          }
+        });
+      }
+    });
+    </script>
     <footer style="text-align:center;margin:2rem 0 1rem 0;color:#888;font-size:0.97rem;">&copy; 2025 LivraisonP2P. Tous droits réservés.</footer>
 </body>
 </html>

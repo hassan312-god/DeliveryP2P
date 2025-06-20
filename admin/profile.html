@@ -140,6 +140,25 @@
             document.getElementById('phone').value = auth.currentProfile.phone || '';
             document.getElementById('profileForm').addEventListener('submit', async function(e) {
                 e.preventDefault();
+                let errorDiv = document.getElementById('profileError');
+                let successDiv = document.getElementById('profileSuccess');
+                if (errorDiv) errorDiv.remove();
+                if (successDiv) successDiv.remove();
+                const formData = new FormData(this);
+                const userData = Object.fromEntries(formData.entries());
+                const btn = this.querySelector('button[type="submit"]');
+                btn.classList.add('btn-loading'); btn.disabled = true;
+                const result = await auth.updateProfile(userData);
+                if (result && result.success) {
+                    const msg = document.createElement('div');
+                    msg.id = 'profileSuccess';
+                    msg.style = 'color: #27ae60; margin: 1rem 0; text-align: center; font-weight: 600;';
+                    msg.textContent = 'Profil mis à jour avec succès.';
+                    this.parentNode.insertBefore(msg, this.nextSibling);
+                } else {
+                    const msg = document.createElement('div');
+                    msg.id = 'profileError';
+                    msg.style = 'color: #e74c3c; margin: 1rem 0; text-align: center; font-weight: 600;';
                 const fileInput = document.getElementById('profileImage');
                 const file = fileInput.files[0];
                 let avatarUrl = auth.currentProfile.avatar_url || null;

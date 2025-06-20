@@ -84,8 +84,11 @@
                 }
                 document.getElementById('createRequestForm').addEventListener('submit', async function(e) {
                     e.preventDefault();
+                    let errorDiv = document.getElementById('requestError');
+                    let successDiv = document.getElementById('requestSuccess');
+                    if (errorDiv) errorDiv.remove();
+                    if (successDiv) successDiv.remove();
                     const formData = new FormData(this);
-                    const data = Object.fromEntries(formData.entries());
                     const btn = this.querySelector('button[type="submit"]');
                     btn.classList.add('btn-loading'); btn.disabled = true;
                     // TODO: Appel API pour créer la demande

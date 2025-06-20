@@ -240,6 +240,10 @@
           e.preventDefault();
           document.getElementById('emailError').textContent = '';
           document.getElementById('passwordError').textContent = '';
+          let errorDiv = document.getElementById('loginError');
+          let successDiv = document.getElementById('loginSuccess');
+          if (errorDiv) errorDiv.remove();
+          if (successDiv) successDiv.remove();
           const email = document.getElementById('email').value;
           const password = document.getElementById('password').value;
           const auth = new window.AuthModule();
@@ -250,12 +254,24 @@
             } else {
               document.getElementById('passwordError').textContent = result.error || 'Erreur de connexion.';
             }
+            // Afficher un message global si besoin
+            const msg = document.createElement('div');
+            msg.id = 'loginError';
+            msg.style = 'color: #e74c3c; margin: 1rem 0; text-align: center; font-weight: 600;';
+            msg.textContent = result.error || 'Erreur lors de la connexion.';
+            this.parentNode.insertBefore(msg, this.nextSibling);
           } else {
             // Redirection selon le rôle
             let dashboard = '/client/dashboard.html';
             if (result.profile && result.profile.role === 'admin') dashboard = '/admin/dashboard.html';
             if (result.profile && result.profile.role === 'courier') dashboard = '/courier/dashboard.html';
-            window.location.href = dashboard;
+            // Afficher un message de succès (optionnel, car redirection rapide)
+            const msg = document.createElement('div');
+            msg.id = 'loginSuccess';
+            msg.style = 'color: #27ae60; margin: 1rem 0; text-align: center; font-weight: 600;';
+            msg.textContent = 'Connexion réussie, redirection...';
+            this.parentNode.insertBefore(msg, this.nextSibling);
+            setTimeout(() => { window.location.href = dashboard; }, 600);
           }
         });
       }

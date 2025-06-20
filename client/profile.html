@@ -151,11 +151,28 @@
                 document.getElementById('adresse').value = auth.currentProfile.adresse || '';
                 document.getElementById('profileForm').addEventListener('submit', async function(e) {
                     e.preventDefault();
+                    let errorDiv = document.getElementById('profileError');
+                    let successDiv = document.getElementById('profileSuccess');
+                    if (errorDiv) errorDiv.remove();
+                    if (successDiv) successDiv.remove();
                     const formData = new FormData(this);
-                    const data = Object.fromEntries(formData.entries());
+                    const userData = Object.fromEntries(formData.entries());
                     const btn = this.querySelector('button[type="submit"]');
                     btn.classList.add('btn-loading'); btn.disabled = true;
-                    await auth.updateProfile(data);
+                    const result = await auth.updateProfile(userData);
+                    if (result && result.success) {
+                        const msg = document.createElement('div');
+                        msg.id = 'profileSuccess';
+                        msg.style = 'color: #27ae60; margin: 1rem 0; text-align: center; font-weight: 600;';
+                        msg.textContent = 'Profil mis à jour avec succès.';
+                        this.parentNode.insertBefore(msg, this.nextSibling);
+                    } else {
+                        const msg = document.createElement('div');
+                        msg.id = 'profileError';
+                        msg.style = 'color: #e74c3c; margin: 1rem 0; text-align: center; font-weight: 600;';
+                        msg.textContent = (result && result.error) ? result.error : 'Erreur lors de la mise à jour du profil.';
+                        this.parentNode.insertBefore(msg, this.nextSibling);
+                    }
                     btn.classList.remove('btn-loading'); btn.disabled = false;
                 });
                 // Avatar dynamique

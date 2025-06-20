@@ -65,30 +65,39 @@
     </main>
     <div id="toastContainer"></div>
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-    <script src="/config.js"></script>
-    <script src="/js/services/supabase.js"></script>
-    <script src="/js/components/toast.js"></script>
-    <script src="/js/modules/auth.js"></script>
+    <script src="../config.js"></script>
+    <script>
+    window.supabaseClient = supabase.createClient(
+      CONFIG.SUPABASE.URL,
+      CONFIG.SUPABASE.ANON_KEY
+    );
+    </script>
+    <script src="../js/services/supabase.js"></script>
+    <script src="../js/modules/auth.js"></script>
+    <script>
+    document.addEventListener('DOMContentLoaded', async function() {
+      if (window.AuthModule) {
+        const auth = new window.AuthModule();
+        const user = await auth.checkLogin();
+        if (!user || auth.currentProfile.role !== 'admin') {
+          window.location.href = '/auth/login.html';
+          return;
+        }
+        document.getElementById('prenomAdmin').textContent = auth.currentProfile.prenom || 'Admin';
+        // Charger stats (exemple)
+        // TODO: Remplacer par appel API réel
+        document.getElementById('nbUsers').textContent = '12';
+        document.getElementById('nbLivraisons').textContent = '34';
+        document.getElementById('nbPaiements').textContent = '20';
+      } else {
+        alert('Erreur lors de l\'initialisation de l\'application');
+      }
+    });
+    </script>
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
     <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
     <script>
-        document.addEventListener('DOMContentLoaded', async function() {
-            if (window.AuthModule) {
-                const auth = new window.AuthModule();
-                const user = await auth.checkLogin();
-                if (!user || auth.currentProfile.role !== 'admin') {
-                    window.location.href = '/auth/login.html';
-                    return;
-                }
-                document.getElementById('prenomAdmin').textContent = auth.currentProfile.prenom || 'Admin';
-                // Charger stats (exemple)
-                // TODO: Remplacer par appel API réel
-                document.getElementById('nbUsers').textContent = '12';
-                document.getElementById('nbLivraisons').textContent = '34';
-                document.getElementById('nbPaiements').textContent = '20';
-            }
-        });
         // Chart.js exemple
         const ctx = document.getElementById('usersChart').getContext('2d');
         new Chart(ctx, {

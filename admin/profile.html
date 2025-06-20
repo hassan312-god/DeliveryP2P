@@ -107,81 +107,89 @@
         </div>
     </main>
     <div id="toastContainer"></div>
+    <footer style="text-align:center;margin:2rem 0 1rem 0;color:#888;font-size:0.97rem;">&copy; 2025 LivraisonP2P. Tous droits réservés.</footer>
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-    <script src="/config.js"></script>
-    <script src="/js/services/supabase.js"></script>
-    <script src="/js/components/toast.js"></script>
-    <script src="/js/modules/auth.js"></script>
+    <script src="../config.js"></script>
     <script>
-        document.addEventListener('DOMContentLoaded', async function() {
-            if (window.AuthModule) {
-                const auth = new window.AuthModule();
-                const user = await auth.checkLogin();
-                if (!user || auth.currentProfile.role !== 'admin') {
-                    window.location.href = '/auth/login.html';
-                    return;
-                }
-                // Afficher l'avatar si déjà présent
-                if (auth.currentProfile.avatar_url) {
-                    document.getElementById('profileImagePreview').src = auth.currentProfile.avatar_url;
-                }
-                // Remplir les autres champs du profil
-                document.getElementById('prenom').value = auth.currentProfile.prenom || '';
-                document.getElementById('nom').value = auth.currentProfile.nom || '';
-                document.getElementById('email').value = auth.currentProfile.email || '';
-                document.getElementById('phone').value = auth.currentProfile.phone || '';
-                document.getElementById('profileForm').addEventListener('submit', async function(e) {
-                    e.preventDefault();
-                    const fileInput = document.getElementById('profileImage');
-                    const file = fileInput.files[0];
-                    let avatarUrl = auth.currentProfile.avatar_url || null;
-                    if (file) {
-                        const ext = file.name.split('.').pop();
-                        const filePath = `avatars/${auth.currentUser.id}_${Date.now()}.${ext}`;
-                        const { error } = await supabase.storage.from('avatars').upload(filePath, file, {
-                            cacheControl: '3600',
-                            upsert: true
-                        });
-                        if (error) {
-                            alert('Erreur upload image: ' + error.message);
-                            return;
-                        }
-                        avatarUrl = supabase.storage.from('avatars').getPublicUrl(filePath).data.publicUrl;
-                    }
-                    const formData = new FormData(this);
-                    const data = Object.fromEntries(formData.entries());
-                    if (avatarUrl) data.avatar_url = avatarUrl;
-                    const btn = this.querySelector('button[type="submit"]');
-                    btn.classList.add('btn-loading'); btn.disabled = true;
-                    await auth.updateProfile(data);
-                    btn.classList.remove('btn-loading'); btn.disabled = false;
-                    if (avatarUrl) {
-                        document.getElementById('profileImagePreview').src = avatarUrl;
-                    }
-                });
-                // Avatar dynamique
-                auth.checkLogin().then(user => {
-                    if (user && auth.currentProfile.avatar_url) {
-                        document.getElementById('navbarAvatarImg').src = auth.currentProfile.avatar_url;
-                        // Redirige le lien selon le rôle
-                        let profilUrl = '/client/profile.html';
-                        if (auth.currentProfile.role === 'admin') profilUrl = '/admin/profile.html';
-                        if (auth.currentProfile.role === 'courier') profilUrl = '/courier/profile.html';
-                        document.getElementById('navbarAvatar').href = profilUrl;
-                    }
-                });
+    window.supabaseClient = supabase.createClient(
+        CONFIG.SUPABASE.URL,
+        CONFIG.SUPABASE.ANON_KEY
+    );
+    </script>
+    <script src="../js/services/supabase.js"></script>
+    <script src="../js/modules/auth.js"></script>
+    <script>
+    document.addEventListener('DOMContentLoaded', async function() {
+        if (window.AuthModule) {
+            const auth = new window.AuthModule();
+            const user = await auth.checkLogin();
+            if (!user || auth.currentProfile.role !== 'admin') {
+                window.location.href = '/auth/login.html';
+                return;
             }
-        });
-        document.getElementById('profileImage').addEventListener('change', function(e) {
-            const file = e.target.files[0];
-            if (file) {
-                const reader = new FileReader();
-                reader.onload = function(evt) {
-                    document.getElementById('profileImagePreview').src = evt.target.result;
-                };
-                reader.readAsDataURL(file);
+            // Afficher l'avatar si déjà présent
+            if (auth.currentProfile.avatar_url) {
+                document.getElementById('profileImagePreview').src = auth.currentProfile.avatar_url;
             }
-        });
+            // Remplir les autres champs du profil
+            document.getElementById('prenom').value = auth.currentProfile.prenom || '';
+            document.getElementById('nom').value = auth.currentProfile.nom || '';
+            document.getElementById('email').value = auth.currentProfile.email || '';
+            document.getElementById('phone').value = auth.currentProfile.phone || '';
+            document.getElementById('profileForm').addEventListener('submit', async function(e) {
+                e.preventDefault();
+                const fileInput = document.getElementById('profileImage');
+                const file = fileInput.files[0];
+                let avatarUrl = auth.currentProfile.avatar_url || null;
+                if (file) {
+                    const ext = file.name.split('.').pop();
+                    const filePath = `avatars/${auth.currentUser.id}_${Date.now()}.${ext}`;
+                    const { error } = await supabase.storage.from('avatars').upload(filePath, file, {
+                        cacheControl: '3600',
+                        upsert: true
+                    });
+                    if (error) {
+                        alert('Erreur upload image: ' + error.message);
+                        return;
+                    }
+                    avatarUrl = supabase.storage.from('avatars').getPublicUrl(filePath).data.publicUrl;
+                }
+                const formData = new FormData(this);
+                const data = Object.fromEntries(formData.entries());
+                if (avatarUrl) data.avatar_url = avatarUrl;
+                const btn = this.querySelector('button[type="submit"]');
+                btn.classList.add('btn-loading'); btn.disabled = true;
+                await auth.updateProfile(data);
+                btn.classList.remove('btn-loading'); btn.disabled = false;
+                if (avatarUrl) {
+                    document.getElementById('profileImagePreview').src = avatarUrl;
+                }
+            });
+            // Avatar dynamique
+            auth.checkLogin().then(user => {
+                if (user && auth.currentProfile.avatar_url) {
+                    document.getElementById('navbarAvatarImg').src = auth.currentProfile.avatar_url;
+                    // Redirige le lien selon le rôle
+                    let profilUrl = '/client/profile.html';
+                    if (auth.currentProfile.role === 'admin') profilUrl = '/admin/profile.html';
+                    if (auth.currentProfile.role === 'courier') profilUrl = '/courier/profile.html';
+                    document.getElementById('navbarAvatar').href = profilUrl;
+                }
+            });
+        } else {
+            alert('Erreur lors de l\'initialisation de l\'application');
+        }
+    });
+    document.getElementById('profileImage').addEventListener('change', function(e) {
+        const file = e.target.files[0];
+        if (file) {
+            const reader = new FileReader();
+            reader.onload = function(evt) {
+                document.getElementById('profileImagePreview').src = evt.target.result;
+            };
+            reader.readAsDataURL(file);
+        }
+    });
     </script>
 </body>
 </html> 

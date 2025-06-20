@@ -210,62 +210,68 @@
     <div id="toastContainer"></div>
 
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-    <script src="/config.js"></script>
-    <script src="/js/services/supabase.js"></script>
-    <script src="/js/components/toast.js"></script>
-    <script src="/js/modules/auth.js"></script>
+    <script src="../config.js"></script>
+    <script>
+    window.supabaseClient = supabase.createClient(
+      CONFIG.SUPABASE.URL,
+      CONFIG.SUPABASE.ANON_KEY
+    );
+    </script>
+    <script src="../js/services/supabase.js"></script>
+    <script src="../js/modules/auth.js"></script>
+    <script>
+    document.addEventListener('DOMContentLoaded', async function() {
+      if (window.AuthModule) {
+        const auth = new window.AuthModule();
+        const user = await auth.checkLogin();
+        if (!user || auth.currentProfile.role !== 'client') {
+          window.location.href = '/auth/login.html';
+          return;
+        }
+        document.getElementById('welcome-message').textContent = `Bienvenue, ${auth.currentProfile.prenom || 'Client'} !`;
+        // Fetch and display dashboard data
+        const { data: deliveries, error } = await supabase
+          .from('deliveries')
+          .select('*')
+          .eq('client_id', user.id)
+          .order('created_at', { ascending: false });
+        if (error) {
+          Toast.error("Erreur lors de la récupération des données.");
+          return;
+        }
+        // Stats
+        document.getElementById('total-deliveries').textContent = deliveries.length;
+        document.getElementById('pending-deliveries').textContent = deliveries.filter(d => d.status === 'pending' || d.status === 'accepted').length;
+        document.getElementById('completed-deliveries').textContent = deliveries.filter(d => d.status === 'delivered').length;
+
+        // Recent deliveries table
+        const tableBody = document.getElementById('recent-deliveries-table');
+        tableBody.innerHTML = '';
+        if (deliveries.length === 0) {
+          tableBody.innerHTML = '<tr><td colspan="5" class="text-center">Aucune livraison pour le moment.</td></tr>';
+        } else {
+          deliveries.slice(0, 5).forEach(delivery => {
+            const row = `
+              <tr>
+                <td>#${delivery.id.toString().slice(0, 6)}</td>
+                <td>${delivery.description}</td>
+                <td><span class="badge">${delivery.status}</span></td>
+                <td>${new Date(delivery.created_at).toLocaleDateString()}</td>
+                <td><a href="/client/track-delivery.html?id=${delivery.id}" class="btn btn-secondary btn-sm">Voir</a></td>
+              </tr>
+            `;
+            tableBody.innerHTML += row;
+          });
+        }
+      } else {
+        alert('Erreur lors de l\'initialisation de l\'application');
+      }
+    });
+    </script>
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
     <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
     <script>
-        document.addEventListener('DOMContentLoaded', async () => {
-            const auth = new AuthModule();
-            const user = await auth.checkLogin();
-            if (!user || auth.currentProfile.role !== 'client') {
-                window.location.href = '/auth/login.html';
-                return;
-            }
-
-            document.getElementById('welcome-message').textContent = `Bienvenue, ${auth.currentProfile.prenom || 'Client'} !`;
-
-            // Fetch and display dashboard data
-            const { data: deliveries, error } = await supabase
-                .from('deliveries')
-                .select('*')
-                .eq('client_id', user.id)
-                .order('created_at', { ascending: false });
-
-            if (error) {
-                Toast.error("Erreur lors de la récupération des données.");
-                return;
-            }
-
-            // Stats
-            document.getElementById('total-deliveries').textContent = deliveries.length;
-            document.getElementById('pending-deliveries').textContent = deliveries.filter(d => d.status === 'pending' || d.status === 'accepted').length;
-            document.getElementById('completed-deliveries').textContent = deliveries.filter(d => d.status === 'delivered').length;
-
-            // Recent deliveries table
-            const tableBody = document.getElementById('recent-deliveries-table');
-            tableBody.innerHTML = '';
-            if (deliveries.length === 0) {
-                tableBody.innerHTML = '<tr><td colspan="5" class="text-center">Aucune livraison pour le moment.</td></tr>';
-            } else {
-                deliveries.slice(0, 5).forEach(delivery => {
-                    const row = `
-                        <tr>
-                            <td>#${delivery.id.toString().slice(0, 6)}</td>
-                            <td>${delivery.description}</td>
-                            <td><span class="badge">${delivery.status}</span></td>
-                            <td>${new Date(delivery.created_at).toLocaleDateString()}</td>
-                            <td><a href="/client/track-delivery.html?id=${delivery.id}" class="btn btn-secondary btn-sm">Voir</a></td>
-                        </tr>
-                    `;
-                    tableBody.innerHTML += row;
-                });
-            }
-        });
-
         document.addEventListener('DOMContentLoaded', function() {
             const navToggle = document.querySelector('.nav-toggle');
             const navMenu = document.querySelector('.nav-menu');

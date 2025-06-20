@@ -10,7 +10,26 @@
     <link href="./css/app-styles.css" rel="stylesheet">
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.1.1/css/all.min.css" rel="stylesheet">
     <style>
-        body { min-height: 100vh; background: var(--bg-secondary); }
+        body { min-height: 100vh; display: flex; flex-direction: column; background: var(--bg-secondary); }
+        main, .main, .app-container.section { flex: 1 0 auto; }
+        footer {
+            flex-shrink: 0;
+            text-align: center;
+            margin: 2rem 0 1rem 0;
+            color: #888;
+            font-size: 0.97rem;
+            background: none;
+            width: 100vw;
+            left: 0;
+            position: relative;
+        }
+        @media (max-width: 600px) {
+            footer {
+                font-size: 0.93rem;
+                padding-left: 0;
+                padding-right: 0;
+            }
+        }
         .qrcode-container { max-width: 420px; margin: 4rem auto; padding: 2rem 1.5rem; }
         .qrcode-card { background: var(--bg-primary); border-radius: var(--border-radius-lg); box-shadow: var(--shadow-lg); padding: 2.5rem 2rem 2rem 2rem; border: 1px solid var(--border-color); text-align: center; }
         .qrcode-header { margin-bottom: 1.5rem; }
@@ -45,7 +64,9 @@
         </div>
     </main>
     <div id="toastContainer"></div>
-    <footer style="text-align:center;margin:2rem 0 1rem 0;color:#888;font-size:0.97rem;">&copy; 2025 LivraisonP2P. Tous droits réservés.</footer>
+    <footer>
+        &copy; 2025 LivraisonP2P. Tous droits réservés.
+    </footer>
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <script src="/config.js"></script>
     <script src="/js/services/supabase.js"></script>

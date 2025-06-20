@@ -175,42 +175,36 @@ class AuthModule {
                 email: email,
                 password: password
             });
-
             if (error) {
                 console.error('Erreur lors de la connexion:', error);
-                return { 
-                    success: false, 
-                    error: this.translateAuthError(error.message) 
-                };
+                return { success: false, error: this.translateAuthError(error.message) };
             }
-
             // Vérifier si l'email est confirmé
             if (!data.user.email_confirmed_at) {
-                // Déconnecter l'utilisateur
                 await this.supabase.auth.signOut();
-                
                 return {
                     success: false,
                     error: 'Veuillez confirmer votre email avant de vous connecter. Vérifiez votre boîte de réception.',
                     requiresConfirmation: true
                 };
             }
-
             // Charger le profil utilisateur
             await this.loadUserProfile();
-
+            // Vérifier l'état du profil
+            if (!this.currentProfile || this.currentProfile.is_active === false) {
+                return {
+                    success: false,
+                    error: 'Votre compte est désactivé ou inexistant. Contactez le support.'
+                };
+            }
             return {
                 success: true,
                 user: data.user,
                 profile: this.currentProfile
             };
-
         } catch (error) {
             console.error('Erreur lors de la connexion:', error);
-            return { 
-                success: false, 
-                error: 'Erreur serveur lors de la connexion' 
-            };
+            return { success: false, error: 'Erreur serveur lors de la connexion' };
         }
     }
 
@@ -496,6 +490,22 @@ class AuthModule {
             console.error('Erreur lors du rafraîchissement de session:', error);
             return { success: false, error };
         }
+    }
+
+    /**
+     * Désactiver le compte utilisateur
+     */
+    async deactivateAccount() {
+        if (!this.currentUser) return { success: false, error: 'Utilisateur non connecté' };
+        const { error } = await this.supabase
+            .from('profiles')
+            .update({ is_active: false })
+            .eq('id', this.currentUser.id);
+        if (error) {
+            return { success: false, error: error.message };
+        }
+        await this.supabase.auth.signOut();
+        return { success: true };
     }
 }
 

@@ -136,16 +136,18 @@ CREATE TRIGGER trigger_update_payments_activity
 CREATE OR REPLACE FUNCTION prevent_critical_deletion()
 RETURNS TRIGGER AS $$
 BEGIN
-    RAISE EXCEPTION 'Suppression non autorisée pour des raisons de sécurité';
+    IF OLD.is_active = TRUE THEN
+        RAISE EXCEPTION 'Suppression non autorisée pour des raisons de sécurité';
+    END IF;
     RETURN OLD;
 END;
 $$ LANGUAGE plpgsql;
 
--- Empêcher la suppression de profils actifs
+DROP TRIGGER IF EXISTS trigger_prevent_profile_deletion ON profiles;
 CREATE TRIGGER trigger_prevent_profile_deletion
     BEFORE DELETE ON profiles
     FOR EACH ROW 
-    WHEN (OLD.is_active = true)
+    WHEN (OLD.is_active = TRUE)
     EXECUTE FUNCTION prevent_critical_deletion();
 
 -- Trigger pour archiver les livraisons anciennes

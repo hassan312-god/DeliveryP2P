@@ -42,7 +42,8 @@ CREATE TABLE IF NOT EXISTS profiles (
     provider VARCHAR(50) DEFAULT 'email',
     last_login TIMESTAMPTZ,
     created_at TIMESTAMPTZ DEFAULT NOW(),
-    updated_at TIMESTAMPTZ DEFAULT NOW()
+    updated_at TIMESTAMPTZ DEFAULT NOW(),
+    is_active BOOLEAN DEFAULT TRUE
 );
 
 -- =====================================================

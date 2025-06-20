@@ -2,29 +2,32 @@
 -- À exécuter après les vues
 
 -- Politiques pour les paiements
-CREATE POLICY "Users can view payments they are involved in" ON payments
+DROP POLICY IF EXISTS "Users can view payments they are involved in" ON payments;
+CREATE POLICY "Users can view payments they are involved in" ON paiements
     FOR SELECT USING (
-        auth.uid() = sender_id OR 
-        auth.uid() = receiver_id OR
+        auth.uid() = client_id OR 
+        auth.uid() = livreur_id OR
         EXISTS (
             SELECT 1 FROM profiles 
             WHERE id = auth.uid() AND role = 'admin'
         )
     );
 
-CREATE POLICY "Users can create payments for their deliveries" ON payments
+DROP POLICY IF EXISTS "Users can create payments for their deliveries" ON payments;
+CREATE POLICY "Users can create payments for their deliveries" ON paiements
     FOR INSERT WITH CHECK (
         EXISTS (
-            SELECT 1 FROM deliveries 
-            WHERE id = delivery_id AND 
-            (client_id = auth.uid() OR courier_id = auth.uid())
+            SELECT 1 FROM livraisons 
+            WHERE id = livraison_id AND 
+            (client_id = auth.uid() OR livreur_id = auth.uid())
         )
     );
 
-CREATE POLICY "Users can update their own payments" ON payments
+DROP POLICY IF EXISTS "Users can update their own payments" ON payments;
+CREATE POLICY "Users can update their own payments" ON paiements
     FOR UPDATE USING (
-        auth.uid() = sender_id OR 
-        auth.uid() = receiver_id OR
+        auth.uid() = client_id OR 
+        auth.uid() = livreur_id OR
         EXISTS (
             SELECT 1 FROM profiles 
             WHERE id = auth.uid() AND role = 'admin'

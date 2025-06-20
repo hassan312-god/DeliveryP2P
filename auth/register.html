@@ -14,9 +14,10 @@
             min-height: 100vh;
             background: var(--bg-secondary);
             display: flex;
-            align-items: center;
-            justify-content: center;
+            flex-direction: column;
         }
+        main, .main, .app-container.section { flex: 1 0 auto; }
+        footer { flex-shrink: 0; text-align: center; margin: 2rem 0 1rem 0; color: #888; font-size: 0.97rem; background: none; }
         .register-container {
             width: 100%;
             max-width: 420px;

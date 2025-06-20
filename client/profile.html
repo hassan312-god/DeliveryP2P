@@ -45,7 +45,9 @@
                     <li><a href="/client/track-delivery.html" class="nav-link">Suivi</a></li>
                     <li><a href="/client/profile.html" class="nav-link active">Profil</a></li>
                 </ul>
-                <a href="/client/profile.html" class="btn btn-secondary btn-sm" style="margin-left: 1rem;">Mon Profil</a>
+                <a href="/client/profile.html" id="navbarAvatar" style="margin-left:1rem;display:flex;align-items:center;">
+                    <img id="navbarAvatarImg" src="/assets/images/logo-orange.png" alt="Avatar" style="width:36px;height:36px;border-radius:50%;object-fit:cover;border:2px solid #f59e42;box-shadow:0 2px 8px rgba(0,0,0,0.07);background:#fff;">
+                </a>
             </nav>
         </div>
         <style>
@@ -156,6 +158,15 @@
                     await auth.updateProfile(data);
                     btn.classList.remove('btn-loading'); btn.disabled = false;
                 });
+                // Avatar dynamique
+                if (user && auth.currentProfile.avatar_url) {
+                    document.getElementById('navbarAvatarImg').src = auth.currentProfile.avatar_url;
+                    // Redirige le lien selon le rôle
+                    let profilUrl = '/client/profile.html';
+                    if (auth.currentProfile.role === 'admin') profilUrl = '/admin/profile.html';
+                    if (auth.currentProfile.role === 'courier') profilUrl = '/courier/profile.html';
+                    document.getElementById('navbarAvatar').href = profilUrl;
+                }
             }
         });
         document.getElementById('profileImage').addEventListener('change', function(e) {

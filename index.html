@@ -40,6 +40,9 @@
                     <li><a href="#contact" class="nav-link">Contact</a></li>
                 </ul>
                 <a href="/auth/register.html" class="btn btn-primary btn-sm" style="margin-left: 1rem;">S'inscrire</a>
+                <a href="/client/profile.html" id="navbarAvatar" style="margin-left:1rem;display:flex;align-items:center;">
+                    <img id="navbarAvatarImg" src="/assets/images/logo-orange.png" alt="Avatar" style="width:36px;height:36px;border-radius:50%;object-fit:cover;border:2px solid #f59e42;box-shadow:0 2px 8px rgba(0,0,0,0.07);background:#fff;">
+                </a>
             </nav>
         </div>
         <style>
@@ -75,6 +78,20 @@
                 navMenu.querySelectorAll('a').forEach(link => {
                     link.addEventListener('click', () => navMenu.classList.remove('open'));
                 });
+                // Avatar dynamique
+                if (window.AuthModule) {
+                    const auth = new window.AuthModule();
+                    auth.checkLogin().then(user => {
+                        if (user && auth.currentProfile.avatar_url) {
+                            document.getElementById('navbarAvatarImg').src = auth.currentProfile.avatar_url;
+                            // Redirige le lien selon le rôle
+                            let profilUrl = '/client/profile.html';
+                            if (auth.currentProfile.role === 'admin') profilUrl = '/admin/profile.html';
+                            if (auth.currentProfile.role === 'courier') profilUrl = '/courier/profile.html';
+                            document.getElementById('navbarAvatar').href = profilUrl;
+                        }
+                    });
+                }
             });
         </script>
     </header>

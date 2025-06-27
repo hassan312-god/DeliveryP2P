@@ -28,18 +28,6 @@ define('APP_NAME', 'LivraisonP2P');
 define('APP_VERSION', '1.1.0');
 define('APP_ENV', 'development'); // development, staging, production
 
-// Configuration des emails
-//define('SMTP_HOST', 'smtp.gmail.com');
-define('SMTP_HOST', getenv('SMTP_HOST'));
-//define('SMTP_PORT', 587);
-define('SMTP_PORT', getenv('SMTP_PORT'));
-//define('SMTP_USERNAME', 'support@livraisonp2p.com');
-define('SMTP_USERNAME', getenv('SMTP_USERNAME'));
-//define('SMTP_PASSWORD', '');
-define('SMTP_PASSWORD', getenv('SMTP_PASSWORD'));
-//define('SMTP_ENCRYPTION', 'tls');
-define('SMTP_ENCRYPTION', getenv('SMTP_ENCRYPTION'));
-
 // Configuration des fichiers
 define('UPLOAD_DIR', 'uploads/');
 define('MAX_FILE_SIZE', 5 * 1024 * 1024); // 5MB

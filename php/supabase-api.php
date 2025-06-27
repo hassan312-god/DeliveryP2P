@@ -395,4 +395,26 @@ class SupabaseAPI {
         ];
     }
 }
+
+// Endpoint checkAuth pour le front-end
+if (isset($_GET['action']) && $_GET['action'] === 'checkAuth') {
+    if (session_status() === PHP_SESSION_NONE) {
+        session_start();
+    }
+    if (isset($_SESSION['user'])) {
+        // Récupère le profil utilisateur depuis la session ou la base si besoin
+        $user = $_SESSION['user'];
+        // Optionnel : $profile = ... (récupérer depuis Supabase si nécessaire)
+        echo json_encode([
+            'success' => true,
+            'data' => [
+                'user' => $user
+                // 'profile' => $profile
+            ]
+        ]);
+    } else {
+        echo json_encode(['success' => false, 'error' => 'Non authentifié']);
+    }
+    exit;
+}
 ?> 

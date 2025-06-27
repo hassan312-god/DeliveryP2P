@@ -144,23 +144,18 @@ class LivraisonP2PApp {
     }
 
     /**
-     * Vérifier l'authentification
+     * Vérifier l'authentification via le backend Render
      */
     async checkAuth() {
         try {
-            const { data: { user } } = await window.apiService.supabase.auth.getUser();
-            
-            if (user) {
-                this.currentUser = user;
-                this.currentProfile = await window.apiService.getUserProfile(user.id);
-                
-                // Mettre à jour l'interface
+            // Appel à l'API PHP Render pour vérifier l'authentification
+            const response = await window.apiService.phpRequest('/supabase-api.php?action=checkAuth');
+            if (response.success && response.data && response.data.user) {
+                this.currentUser = response.data.user;
+                this.currentProfile = response.data.profile;
                 this.updateAuthUI();
-                
-                // Charger les notifications
                 this.loadNotifications();
-                
-                ConfigUtils.log('info', 'Utilisateur authentifié', { userId: user.id });
+                ConfigUtils.log('info', 'Utilisateur authentifié', { userId: this.currentUser.id });
             } else {
                 this.currentUser = null;
                 this.currentProfile = null;

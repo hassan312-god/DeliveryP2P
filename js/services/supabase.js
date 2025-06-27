@@ -1,4 +1,4 @@
-// Supabase désactivé côté front-end. Toutes les opérations doivent passer par le back-end Render.
+// Supabase désactivé côté front-end. Toute l'authentification passe par le backend Render.
 
 /**
  * Service Supabase pour LivraisonP2P

@@ -840,15 +840,11 @@ class LivraisonP2PApp {
      */
     async updateUserLocation(location) {
         try {
-            await window.apiService.supabase
-                .from('user_locations')
-                .upsert({
-                    user_id: this.currentUser.id,
-                    latitude: location.lat,
-                    longitude: location.lng,
-                    accuracy: location.accuracy,
-                    updated_at: new Date().toISOString()
-                });
+            // Mettre à jour la localisation si l'utilisateur est connecté
+            if (this.currentUser) {
+                // Mettre à jour la localisation dans la base de données
+                // Cette partie est supprimée car le client Supabase n'est plus disponible côté front-end
+            }
         } catch (error) {
             console.error('Erreur mise à jour localisation:', error);
         }

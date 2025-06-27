@@ -1,3 +1,5 @@
+// Supabase désactivé côté front-end. Toutes les opérations doivent passer par le back-end Render.
+
 /**
  * Service Supabase pour LivraisonP2P
  * Gère la connexion à Supabase et les opérations de base

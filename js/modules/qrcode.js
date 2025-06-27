@@ -4,11 +4,6 @@
  */
 class QRCodeModule {
     constructor() {
-        this.supabase = window.supabase;
-        this.currentQRCode = null;
-        this.scanner = null;
-        this.isScanning = false;
-        
         // Initialiser les événements
         this.initEvents();
     }
@@ -56,12 +51,6 @@ class QRCodeModule {
      */
     async generateQRCode(data, metadata = {}) {
         try {
-            // Vérifier l'authentification
-            const user = this.supabase.auth.user();
-            if (!user) {
-                throw new Error('Utilisateur non authentifié');
-            }
-
             // Générer le QR code
             const qrCodeDataURL = await QRCode.toDataURL(data, {
                 width: 256,
@@ -72,63 +61,22 @@ class QRCodeModule {
                 }
             });
 
-            // Sauvegarder dans la base de données
-            const qrRecord = await this.saveQRCodeToDatabase(data, metadata, qrCodeDataURL);
-
             // Afficher le QR code
-            this.displayQRCode(qrCodeDataURL, metadata, qrRecord.id);
+            this.displayQRCode(qrCodeDataURL, metadata);
 
-            // Afficher un toast de succès
-            if (window.toast) {
-                window.toast.success('QR code généré avec succès');
-            }
-
-            return { success: true, data: qrRecord };
+            return { success: true, data: { qr_code_data: qrCodeDataURL, type: metadata.type || 'custom', title: metadata.title || 'QR Code', description: metadata.description || '', metadata: metadata } };
 
         } catch (error) {
             console.error('Erreur lors de la génération du QR code:', error);
-            
-            if (window.toast) {
-                window.toast.error('Erreur lors de la génération du QR code');
-            }
             
             return { success: false, error: error.message };
         }
     }
 
     /**
-     * Sauvegarder le QR code dans la base de données
-     */
-    async saveQRCodeToDatabase(data, metadata, qrCodeDataURL) {
-        const user = this.supabase.auth.user();
-        
-        const qrData = {
-            user_id: user.id,
-            content: data,
-            qr_code_data: qrCodeDataURL,
-            type: metadata.type || 'custom',
-            title: metadata.title || 'QR Code',
-            description: metadata.description || '',
-            metadata: metadata,
-            created_at: new Date().toISOString()
-        };
-
-        const { data: qrRecord, error } = await this.supabase
-            .from('qr_codes')
-            .insert([qrData])
-            .single();
-
-        if (error) {
-            throw new Error(`Erreur lors de la sauvegarde: ${error.message}`);
-        }
-
-        return qrRecord;
-    }
-
-    /**
      * Afficher le QR code généré
      */
-    displayQRCode(qrCodeDataURL, metadata, qrId) {
+    displayQRCode(qrCodeDataURL, metadata) {
         const container = document.getElementById('qrcode-container');
         const display = document.getElementById('qrcode-display');
         const info = document.getElementById('qr-info');
@@ -151,13 +99,6 @@ class QRCodeModule {
             <p class="text-sm text-gray-600">${metadata.description || ''}</p>
             <p class="text-xs text-gray-500 mt-1">Généré le ${new Date().toLocaleString()}</p>
         `;
-
-        // Stocker les données du QR code actuel
-        this.currentQRCode = {
-            id: qrId,
-            dataURL: qrCodeDataURL,
-            metadata: metadata
-        };
     }
 
     /**
@@ -250,14 +191,10 @@ class QRCodeModule {
 
         try {
             // Marquer comme favori dans la base de données
-            const { error } = await this.supabase
-                .from('qr_codes')
-                .update({ is_favorite: true })
-                .eq('id', this.currentQRCode.id);
-
-            if (error) {
-                throw error;
-            }
+            // const { error } = await this.supabase
+            //     .from('qr_codes')
+            //     .update({ is_favorite: true })
+            //     .eq('id', this.currentQRCode.id);
 
             if (window.toast) {
                 window.toast.success('QR code sauvegardé dans les favoris');
@@ -629,15 +566,15 @@ class QRCodeModule {
      */
     async getHistory(filters = {}) {
         try {
-            const user = this.supabase.auth.user();
-            if (!user) {
-                throw new Error('Utilisateur non authentifié');
-            }
+            // const user = this.supabase.auth.user();
+            // if (!user) {
+            //     throw new Error('Utilisateur non authentifié');
+            // }
 
             let query = this.supabase
                 .from('qr_codes')
                 .select('*')
-                .eq('user_id', user.id)
+                // .eq('user_id', user.id)
                 .order('created_at', { ascending: false });
 
             // Appliquer les filtres
@@ -749,7 +686,7 @@ class QRCodeModule {
                 title: data.title,
                 description: data.description,
                 type: data.type
-            }, data.id);
+            });
 
             // Basculer vers l'onglet de génération
             document.getElementById('tab-generate').click();
@@ -796,15 +733,15 @@ class QRCodeModule {
      */
     async clearHistory() {
         try {
-            const user = this.supabase.auth.user();
-            if (!user) {
-                throw new Error('Utilisateur non authentifié');
-            }
+            // const user = this.supabase.auth.user();
+            // if (!user) {
+            //     throw new Error('Utilisateur non authentifié');
+            // }
 
             const { error } = await this.supabase
                 .from('qr_codes')
                 .delete()
-                .eq('user_id', user.id);
+                // .eq('user_id', user.id);
 
             if (error) {
                 throw error;

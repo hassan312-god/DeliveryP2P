@@ -43,35 +43,9 @@
         </div>
     </main>
     <div id="toastContainer"></div>
-    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <script src="/config.js"></script>
-    <script src="/js/services/supabase.js"></script>
     <script src="/js/components/toast.js"></script>
     <script src="/js/modules/auth.js"></script>
-    <script>
-        document.addEventListener('DOMContentLoaded', async function() {
-            if (window.AuthModule) {
-                const auth = new window.AuthModule();
-                await auth.checkLogin();
-            }
-            // TODO: Charger les notifications depuis l'API
-            const notifs = [
-                { icon: 'fa-box', title: 'Colis livré', content: 'Votre colis #12345 a été livré.', date: 'il y a 5 min' },
-                { icon: 'fa-comment', title: 'Nouveau message', content: 'Vous avez reçu un message du livreur.', date: 'il y a 30 min' },
-                { icon: 'fa-exclamation-triangle', title: 'Échec de livraison', content: 'Votre colis #12344 n'a pas pu être livré.', date: 'hier' }
-            ];
-            const list = document.getElementById('notifList');
-            list.innerHTML = notifs.map(n => `
-                <div class="notif-item">
-                    <span class="notif-icon"><i class="fas ${n.icon}"></i></span>
-                    <div class="notif-content">
-                        <div class="notif-title">${n.title}</div>
-                        <div>${n.content}</div>
-                        <div class="notif-date">${n.date}</div>
-                    </div>
-                </div>
-            `).join('');
-        });
-    </script>
+    <!-- SUPABASE SCRIPTS SUPPRIMÉS car centralisés dans les modules JS principaux -->
 </body>
 </html> 

@@ -134,16 +134,28 @@ function getBaseUrl() {
 
 // Fonction pour logger
 function logMessage($level, $message, $context = []) {
-    if (!is_dir(LOG_DIR)) {
-        mkdir(LOG_DIR, 0755, true);
+    try {
+        if (!is_dir(LOG_DIR)) {
+            if (!mkdir(LOG_DIR, 0755, true)) {
+                // Si on ne peut pas créer le dossier, on ne log pas
+                return;
+            }
+        }
+        
+        $logFile = LOG_DIR . date('Y-m-d') . '.log';
+        $timestamp = date('Y-m-d H:i:s');
+        $contextStr = !empty($context) ? ' ' . json_encode($context) : '';
+        $logEntry = "[$timestamp] [$level] $message$contextStr" . PHP_EOL;
+        
+        // Essayer d'écrire le log, mais ne pas planter si ça échoue
+        @file_put_contents($logFile, $logEntry, FILE_APPEND | LOCK_EX);
+    } catch (Exception $e) {
+        // En cas d'erreur, on ne fait rien pour éviter de planter l'application
+        // En développement, on peut afficher l'erreur
+        if (isDevelopment()) {
+            error_log("Erreur de log: " . $e->getMessage());
+        }
     }
-    
-    $logFile = LOG_DIR . date('Y-m-d') . '.log';
-    $timestamp = date('Y-m-d H:i:s');
-    $contextStr = !empty($context) ? ' ' . json_encode($context) : '';
-    $logEntry = "[$timestamp] [$level] $message$contextStr" . PHP_EOL;
-    
-    file_put_contents($logFile, $logEntry, FILE_APPEND | LOCK_EX);
 }
 
 // Fonction pour nettoyer les entrées utilisateur
@@ -300,10 +312,12 @@ if (session_status() === PHP_SESSION_NONE) {
     session_start();
 }
 
-// Log de démarrage
-logMessage('INFO', 'Application démarrée', [
-    'env' => APP_ENV,
-    'version' => APP_VERSION,
-    'url' => $_SERVER['REQUEST_URI'] ?? 'unknown'
-]);
+// Log de démarrage (seulement si on n'est pas dans un contexte d'API)
+if (!isset($_GET['action']) && !isset($_SERVER['HTTP_ACCEPT']) || strpos($_SERVER['HTTP_ACCEPT'] ?? '', 'application/json') === false) {
+    logMessage('INFO', 'Application démarrée', [
+        'env' => APP_ENV,
+        'version' => APP_VERSION,
+        'url' => $_SERVER['REQUEST_URI'] ?? 'unknown'
+    ]);
+}
 ?> 

@@ -3,11 +3,17 @@
     SetHandler application/x-httpd-php
 </FilesMatch>
 
-# Sécuriser le dossier logs
-<Directory "logs">
+# Sécuriser le dossier logs (version corrigée)
+<FilesMatch "\.(log|sql)$">
     Order Deny,Allow
     Deny from all
-</Directory>
+</FilesMatch>
+
+# Empêcher l'accès aux fichiers sensibles
+<FilesMatch "\.(env|config|ini|bak|backup)$">
+    Order Deny,Allow
+    Deny from all
+</FilesMatch>
 
 # (Optionnel) Rediriger tout vers index.php si tu veux une API REST unique
 # RewriteEngine On

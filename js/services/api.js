@@ -165,7 +165,10 @@ class ApiService {
      * Requête vers l'API PHP
      */
     async phpRequest(endpoint, options = {}) {
-        const url = `${this.baseUrl}${endpoint}`;
+        let url = endpoint;
+        if (!endpoint.startsWith('http')) {
+            url = `https://deliveryp2p-backend.onrender.com${endpoint}`;
+        }
         return this.request(url, options);
     }
 
@@ -618,7 +621,7 @@ class ApiService {
      */
     async getAdminStats() {
         try {
-            return await this.phpRequest('/admin-dashboard.php?action=stats');
+            return await this.phpRequest('https://deliveryp2p-backend.onrender.com/admin-dashboard.php?action=stats');
 
         } catch (error) {
             console.error('Erreur statistiques admin:', error);
@@ -752,7 +755,7 @@ class ApiService {
      */
     async healthCheck() {
         try {
-            return await this.phpRequest('/admin-dashboard.php?action=health');
+            return await this.phpRequest('https://deliveryp2p-backend.onrender.com/admin-dashboard.php?action=health');
 
         } catch (error) {
             console.error('Erreur health check:', error);

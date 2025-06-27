@@ -17,7 +17,7 @@ const CONFIG = {
         VERSION: '1.2.0',
         ENV: 'development', // development, staging, production
         BASE_URL: window.location.origin,
-        API_BASE_URL: window.location.origin + '/php',
+        API_BASE_URL: 'https://deliveryp2p-backend.onrender.com',
         SUPPORT_EMAIL: 'support@livraisonp2p.com',
         SUPPORT_PHONE: '+221 77 123 45 67'
     },

@@ -304,7 +304,7 @@ class LivraisonP2PApp {
                 redirectUrl = lastSection && lastSection.includes('/courier/') ? lastSection : '/courier/dashboard.html';
                 break;
             case 'admin':
-                redirectUrl = '/php/admin-dashboard.php';
+                redirectUrl = 'https://deliveryp2p-backend.onrender.com/admin-dashboard.php';
                 break;
         }
 

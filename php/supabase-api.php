@@ -20,7 +20,7 @@ class SupabaseAPI {
     /**
      * Effectuer une requête HTTP vers Supabase
      */
-    private function makeRequest($endpoint, $method = 'GET', $data = null, $useServiceKey = false) {
+    private function makeRequest($endpoint, $method = 'GET', $data = null, $useServiceKey = false, $customToken = null) {
         $url = $this->baseUrl . '/rest/v1/' . ltrim($endpoint, '/');
         
         $headers = [
@@ -31,6 +31,9 @@ class SupabaseAPI {
         // Utiliser la clé service pour les opérations admin
         if ($useServiceKey && !empty($this->serviceKey)) {
             $headers[] = 'Authorization: Bearer ' . $this->serviceKey;
+        } elseif ($customToken) {
+            // Utiliser un token personnalisé
+            $headers[] = 'Authorization: Bearer ' . $customToken;
         } else {
             $headers[] = 'apikey: ' . $this->anonKey;
         }
@@ -398,22 +401,72 @@ class SupabaseAPI {
 
 // Endpoint checkAuth pour le front-end
 if (isset($_GET['action']) && $_GET['action'] === 'checkAuth') {
-    if (session_status() === PHP_SESSION_NONE) {
-        session_start();
-    }
-    if (isset($_SESSION['user'])) {
-        // Récupère le profil utilisateur depuis la session ou la base si besoin
-        $user = $_SESSION['user'];
-        // Optionnel : $profile = ... (récupérer depuis Supabase si nécessaire)
-        echo json_encode([
-            'success' => true,
-            'data' => [
-                'user' => $user
-                // 'profile' => $profile
-            ]
-        ]);
-    } else {
-        echo json_encode(['success' => false, 'error' => 'Non authentifié']);
+    header('Content-Type: application/json');
+    
+    try {
+        // Vérifier si on a un token dans les headers ou la session
+        $authHeader = $_SERVER['HTTP_AUTHORIZATION'] ?? null;
+        $sessionUser = $_SESSION['user'] ?? null;
+        
+        if ($authHeader && strpos($authHeader, 'Bearer ') === 0) {
+            // Token Bearer fourni - vérifier avec Supabase
+            $token = substr($authHeader, 7);
+            $api = new SupabaseAPI();
+            
+            // Vérifier le token avec Supabase en utilisant l'endpoint auth
+            $url = $this->baseUrl . '/auth/v1/user';
+            $headers = [
+                'Authorization: Bearer ' . $token,
+                'apikey: ' . $this->anonKey
+            ];
+            
+            $ch = curl_init();
+            curl_setopt_array($ch, [
+                CURLOPT_URL => $url,
+                CURLOPT_RETURNTRANSFER => true,
+                CURLOPT_TIMEOUT => CURL_TIMEOUT,
+                CURLOPT_HTTPHEADER => $headers,
+                CURLOPT_SSL_VERIFYPEER => true
+            ]);
+            
+            $response = curl_exec($ch);
+            $httpCode = curl_getinfo($ch, CURLINFO_HTTP_CODE);
+            curl_close($ch);
+            
+            $userData = json_decode($response, true);
+            
+            if ($httpCode === 200 && $userData) {
+                $user = $userData;
+                
+                // Récupérer le profil utilisateur
+                $profileResult = $api->select('profiles', ['id' => $user['id']]);
+                $profile = $profileResult['success'] ? $profileResult['data'][0] ?? null : null;
+                
+                echo json_encode([
+                    'success' => true,
+                    'data' => [
+                        'user' => $user,
+                        'profile' => $profile
+                    ]
+                ]);
+            } else {
+                echo json_encode(['success' => false, 'error' => 'Token invalide']);
+            }
+        } elseif ($sessionUser) {
+            // Utilisateur en session PHP
+            echo json_encode([
+                'success' => true,
+                'data' => [
+                    'user' => $sessionUser,
+                    'profile' => $_SESSION['profile'] ?? null
+                ]
+            ]);
+        } else {
+            echo json_encode(['success' => false, 'error' => 'Non authentifié']);
+        }
+    } catch (Exception $e) {
+        logMessage('ERROR', 'Erreur checkAuth: ' . $e->getMessage());
+        echo json_encode(['success' => false, 'error' => 'Erreur serveur']);
     }
     exit;
 }

@@ -1,0 +1,4 @@
+[2025-06-27 21:52:15] [INFO] Application démarrée {"env":"development","version":"1.1.0","url":"unknown"}
+[2025-06-27 21:52:15] [ERROR] Erreur cURL: URL rejected: No host part in the URL
+[2025-06-27 21:53:34] [INFO] Application démarrée {"env":"development","version":"1.1.0","url":"unknown"}
+[2025-06-27 21:53:35] [ERROR] Erreur cURL: SSL certificate problem: unable to get local issuer certificate

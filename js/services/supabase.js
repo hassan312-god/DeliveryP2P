@@ -1,3 +1,4 @@
+<<<<<<< HEAD
 import { createClient } from '@supabase/supabase-js';
 
 // Supabase désactivé côté front-end. Toute l'authentification passe par le backend Render.
@@ -557,3 +558,9 @@ if (typeof module !== 'undefined' && module.exports) {
         SupabaseDatabaseService
     };
 } 
+=======
+// Supabase désactivé côté front-end. Toute l'authentification et les opérations passent par le backend Render.
+// import { createClient } from '@supabase/supabase-js';
+// const supabase = createClient('https://...supabase.co', 'public-anon-key');
+// export default supabase;
+>>>>>>> a4a40615c69d06d75887da42bf47e9e0a471748f

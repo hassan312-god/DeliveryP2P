@@ -1,0 +1,16 @@
+services:
+  - type: web
+    name: deliveryp2p-backend
+    runtime: docker
+    dockerfilePath: ./php/Dockerfile
+    envVars:
+      - key: SUPABASE_URL
+        value: https://syamapjohtlbjlyhlhsi.supabase.co
+      - key: SUPABASE_ANON_KEY
+        value: eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InN5YW1hcGpvaHRsYmpseWhsaHNpIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTAzNzAxNjksImV4cCI6MjA2NTk0NjE2OX0._Sl5uiiUKK58wPa-lJG-TPe7K9rdem6Uc2V4epyhx_M
+      - key: SUPABASE_SERVICE_KEY
+        value: your-service-key
+      - key: JWT_SECRET
+        value: your-jwt-secret
+      - key: PASSWORD_SALT
+        value: your-password-salt 

@@ -4,10 +4,24 @@
  * Fichier de configuration centralisé
  */
 
+// Autoriser les requêtes CORS depuis Netlify
+if (isset($_SERVER['HTTP_ORIGIN']) && preg_match('/netlify\.app$/', $_SERVER['HTTP_ORIGIN'])) {
+    header("Access-Control-Allow-Origin: " . $_SERVER['HTTP_ORIGIN']);
+    header("Access-Control-Allow-Methods: GET, POST, OPTIONS");
+    header("Access-Control-Allow-Headers: Content-Type, Authorization");
+    if ($_SERVER['REQUEST_METHOD'] === 'OPTIONS') {
+        http_response_code(200);
+        exit;
+    }
+}
+
 // Configuration de la base de données Supabase
-define('SUPABASE_URL', 'https://syamapjohtlbjlyhlhsi.supabase.co');
-define('SUPABASE_ANON_KEY', 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InN5YW1hcGpvaHRsYmpseWhsaHNpIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTAzNzAxNjksImV4cCI6MjA2NTk0NjE2OX0._Sl5uiiUKK58wPa-lJG-TPe7K9rdem6Uc2V4epyhx_M');
-define('SUPABASE_SERVICE_KEY', ''); // Clé service pour les opérations admin
+//define('SUPABASE_URL', 'https://syamapjohtlbjlyhlhsi.supabase.co');
+define('SUPABASE_URL', getenv('SUPABASE_URL'));
+//define('SUPABASE_ANON_KEY', 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InN5YW1hcGpvaHRsYmpseWhsaHNpIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTAzNzAxNjksImV4cCI6MjA2NTk0NjE2OX0._Sl5uiiUKK58wPa-lJG-TPe7K9rdem6Uc2V4epyhx_M');
+define('SUPABASE_ANON_KEY', getenv('SUPABASE_ANON_KEY'));
+//define('SUPABASE_SERVICE_KEY', ''); // Clé service pour les opérations admin
+define('SUPABASE_SERVICE_KEY', getenv('SUPABASE_SERVICE_KEY'));
 
 // Configuration de l'application
 define('APP_NAME', 'LivraisonP2P');
@@ -15,11 +29,16 @@ define('APP_VERSION', '1.1.0');
 define('APP_ENV', 'development'); // development, staging, production
 
 // Configuration des emails
-define('SMTP_HOST', 'smtp.gmail.com');
-define('SMTP_PORT', 587);
-define('SMTP_USERNAME', 'support@livraisonp2p.com');
-define('SMTP_PASSWORD', '');
-define('SMTP_ENCRYPTION', 'tls');
+//define('SMTP_HOST', 'smtp.gmail.com');
+define('SMTP_HOST', getenv('SMTP_HOST'));
+//define('SMTP_PORT', 587);
+define('SMTP_PORT', getenv('SMTP_PORT'));
+//define('SMTP_USERNAME', 'support@livraisonp2p.com');
+define('SMTP_USERNAME', getenv('SMTP_USERNAME'));
+//define('SMTP_PASSWORD', '');
+define('SMTP_PASSWORD', getenv('SMTP_PASSWORD'));
+//define('SMTP_ENCRYPTION', 'tls');
+define('SMTP_ENCRYPTION', getenv('SMTP_ENCRYPTION'));
 
 // Configuration des fichiers
 define('UPLOAD_DIR', 'uploads/');
@@ -27,8 +46,10 @@ define('MAX_FILE_SIZE', 5 * 1024 * 1024); // 5MB
 define('ALLOWED_EXTENSIONS', ['jpg', 'jpeg', 'png', 'gif', 'pdf']);
 
 // Configuration de sécurité
-define('JWT_SECRET', 'your-secret-key-here');
-define('PASSWORD_SALT', 'livraisonp2p-salt-2024');
+//define('JWT_SECRET', 'your-secret-key-here');
+define('JWT_SECRET', getenv('JWT_SECRET'));
+//define('PASSWORD_SALT', 'livraisonp2p-salt-2024');
+define('PASSWORD_SALT', getenv('PASSWORD_SALT'));
 define('SESSION_TIMEOUT', 24 * 60 * 60); // 24 heures
 
 // Configuration des prix (XOF)

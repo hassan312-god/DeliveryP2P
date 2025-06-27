@@ -1,4 +1,4 @@
-// Supabase désactivé côté front-end. Toutes les requêtes doivent passer par le back-end Render.
+// Supabase désactivé côté front-end. Voir js/services/supabase.js pour la logique d'initialisation et d'utilisation du client Supabase.
 // import { createClient } from '@supabase/supabase-js';
 // const supabase = createClient('https://...supabase.co', 'public-anon-key');
 // export default supabase;

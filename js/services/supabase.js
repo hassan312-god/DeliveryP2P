@@ -1,3 +1,5 @@
+import { createClient } from '@supabase/supabase-js';
+
 // Supabase désactivé côté front-end. Toute l'authentification passe par le backend Render.
 
 /**

@@ -1,0 +1,8 @@
+{
+  "name": "DeliveryP2P",
+  "short_name": "DeliveryP2P",
+  "start_url": ".",
+  "display": "standalone",
+  "background_color": "#ffffff",
+  "description": "Application de livraison P2P"
+} 

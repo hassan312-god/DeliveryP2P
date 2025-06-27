@@ -767,7 +767,7 @@ class ApiService {
 // Gestion explicite des erreurs d'accès refusé (permission denied)
 function handleApiError(error) {
     if (error && error.message && error.message.toLowerCase().includes('permission denied')) {
-        if (window.toast) window.toast.error('Vous n'avez pas les droits pour effectuer cette action.');
+        if (window.toast) window.toast.error('Vous navez pas les droits pour effectuer cette action.');
         return { success: false, error: 'Accès refusé.' };
     }
     return { success: false, error: error.message || 'Erreur inconnue.' };

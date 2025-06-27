@@ -134,6 +134,14 @@ function getBaseUrl() {
 
 // Fonction pour logger
 function logMessage($level, $message, $context = []) {
+    // En production, si on ne peut pas écrire les logs, on ne fait rien
+    if (isProduction()) {
+        // Vérifier si le dossier de logs existe et est accessible
+        if (!is_dir(LOG_DIR) || !is_writable(LOG_DIR)) {
+            return; // Sortir silencieusement
+        }
+    }
+    
     try {
         if (!is_dir(LOG_DIR)) {
             if (!mkdir(LOG_DIR, 0755, true)) {
@@ -148,13 +156,13 @@ function logMessage($level, $message, $context = []) {
         $logEntry = "[$timestamp] [$level] $message$contextStr" . PHP_EOL;
         
         // Essayer d'écrire le log, mais ne pas planter si ça échoue
-        @file_put_contents($logFile, $logEntry, FILE_APPEND | LOCK_EX);
+        if (!@file_put_contents($logFile, $logEntry, FILE_APPEND | LOCK_EX)) {
+            // En cas d'échec, on ne fait rien pour éviter les warnings
+            return;
+        }
     } catch (Exception $e) {
         // En cas d'erreur, on ne fait rien pour éviter de planter l'application
-        // En développement, on peut afficher l'erreur
-        if (isDevelopment()) {
-            error_log("Erreur de log: " . $e->getMessage());
-        }
+        return;
     }
 }
 
@@ -284,17 +292,6 @@ function sendSuccessResponse($data = null, $message = 'Succès') {
     sendJsonResponse($response);
 }
 
-// Initialisation des headers CORS
-header('Access-Control-Allow-Origin: *');
-header('Access-Control-Allow-Methods: GET, POST, PUT, DELETE, OPTIONS');
-header('Access-Control-Allow-Headers: Content-Type, Authorization');
-
-// Gestion des requêtes OPTIONS (preflight)
-if ($_SERVER['REQUEST_METHOD'] === 'OPTIONS') {
-    http_response_code(200);
-    exit;
-}
-
 // Configuration des erreurs selon l'environnement
 if (isDevelopment()) {
     error_reporting(E_ALL);
@@ -312,8 +309,8 @@ if (session_status() === PHP_SESSION_NONE) {
     session_start();
 }
 
-// Log de démarrage (seulement si on n'est pas dans un contexte d'API)
-if (!isset($_GET['action']) && !isset($_SERVER['HTTP_ACCEPT']) || strpos($_SERVER['HTTP_ACCEPT'] ?? '', 'application/json') === false) {
+// Log de démarrage (seulement en développement et si pas dans un contexte d'API)
+if (isDevelopment() && !isset($_GET['action']) && (!isset($_SERVER['HTTP_ACCEPT']) || strpos($_SERVER['HTTP_ACCEPT'] ?? '', 'application/json') === false)) {
     logMessage('INFO', 'Application démarrée', [
         'env' => APP_ENV,
         'version' => APP_VERSION,

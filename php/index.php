@@ -4,18 +4,25 @@
  * Redirige vers l'API appropriée selon l'action demandée
  */
 
+// Démarrer le buffer de sortie pour éviter les problèmes de headers
+ob_start();
+
 // Inclure la configuration
 require_once 'config.php';
 
-// Headers CORS
-header('Access-Control-Allow-Origin: *');
-header('Access-Control-Allow-Methods: GET, POST, PUT, DELETE, OPTIONS');
-header('Access-Control-Allow-Headers: Content-Type, Authorization');
-header('Content-Type: application/json');
+// Vérifier si les headers CORS ont déjà été envoyés
+if (!headers_sent()) {
+    // Headers CORS (seulement si pas déjà envoyés)
+    header('Access-Control-Allow-Origin: *');
+    header('Access-Control-Allow-Methods: GET, POST, PUT, DELETE, OPTIONS');
+    header('Access-Control-Allow-Headers: Content-Type, Authorization');
+    header('Content-Type: application/json');
+}
 
 // Gestion des requêtes OPTIONS (preflight)
 if ($_SERVER['REQUEST_METHOD'] === 'OPTIONS') {
     http_response_code(200);
+    ob_end_flush();
     exit;
 }
 
@@ -25,6 +32,7 @@ $action = $_GET['action'] ?? '';
 if ($action === 'checkAuth') {
     // Rediriger vers l'API d'authentification
     require_once 'supabase-api.php';
+    ob_end_flush();
     exit;
 }
 
@@ -37,6 +45,7 @@ if ($action === 'health') {
         'timestamp' => date('Y-m-d H:i:s'),
         'environment' => APP_ENV
     ]);
+    ob_end_flush();
     exit;
 }
 
@@ -55,4 +64,7 @@ echo json_encode([
     ],
     'documentation' => 'Voir README.md pour plus d\'informations'
 ]);
+
+// Vider le buffer et terminer
+ob_end_flush();
 ?> 

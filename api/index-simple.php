@@ -360,6 +360,7 @@ if (!$route_found) {
         'available_routes' => array_keys($routes[$method] ?? []),
         'exact_match_health' => ($uri === '/health') ? 'YES' : 'NO',
         'exact_match_supabase_test' => ($uri === '/supabase/test') ? 'YES' : 'NO',
+        'starts_with_api' => (strpos($_SERVER['REQUEST_URI'], '/api') === 0) ? 'YES' : 'NO',
         'timestamp' => date('c')
     ], JSON_PRETTY_PRINT);
 } 

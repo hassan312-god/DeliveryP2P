@@ -1,5 +1,5 @@
 # Dockerfile optimisé pour Render - LivraisonP2P
-# Adapté à la structure frontend/ + public/
+# Adapté à la structure frontend/ + api/
 
 FROM php:8.2-apache
 
@@ -35,12 +35,6 @@ COPY . /var/www/html/
 # Installation des dépendances PHP
 RUN composer install --optimize-autoloader --no-dev --no-interaction
 
-# Configuration des permissions
-RUN chown -R www-data:www-data /var/www/html \
-    && chmod -R 755 /var/www/html/storage \
-    && chmod -R 755 /var/www/html/frontend \
-    && mkdir -p storage/{logs,cache,qr_codes,uploads}
-
 # Configuration PHP pour la production
 RUN echo "memory_limit = 256M" >> /usr/local/etc/php/conf.d/custom.ini \
     && echo "max_execution_time = 30" >> /usr/local/etc/php/conf.d/custom.ini \
@@ -56,8 +50,11 @@ RUN echo '<Directory /var/www/html>' >> /etc/apache2/sites-available/000-default
     && echo '    RewriteRule ^health$ /api/health.php [QSA,L]' >> /etc/apache2/sites-available/000-default.conf \
     && echo '</Directory>' >> /etc/apache2/sites-available/000-default.conf
 
+# Rendre le script de démarrage exécutable
+RUN chmod +x /var/www/html/start.sh
+
 # Exposition du port
 EXPOSE 80
 
 # Commande de démarrage
-CMD ["apache2-foreground"] 
+CMD ["/var/www/html/start.sh"] 

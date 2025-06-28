@@ -60,9 +60,10 @@
         "optimize-autoloader": true,
         "sort-packages": true,
         "allow-plugins": {
+            "endroid/installer": true,
             "php-http/discovery": true
         }
     },
     "minimum-stability": "stable",
     "prefer-stable": true
-} 
+}

@@ -1,4 +1,20 @@
 services:
+  # Service Frontend
+  - type: web
+    name: deliveryp2p-frontend
+    env: static
+    buildCommand: echo "Frontend static files"
+    startCommand: echo "Frontend served by Render"
+    staticPublishPath: ./frontend
+    routes:
+      - type: rewrite
+        source: /auth/*
+        destination: /auth/index.html
+      - type: rewrite
+        source: /*
+        destination: /index.html
+
+  # Service API
   - type: web
     name: deliveryp2p-api
     env: php

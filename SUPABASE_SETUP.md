@@ -1,272 +1,198 @@
-# 🚀 Guide de Configuration Supabase pour DeliveryP2P
+# Guide de Configuration Supabase pour LivraisonP2P
 
-## 📋 **Étapes de Configuration**
+## 📋 Vue d'ensemble
 
-### 1. **Créer un projet Supabase**
+Ce guide détaille la configuration complète de Supabase pour l'application LivraisonP2P, incluant la création de la base de données, la configuration des clés API, et l'intégration avec le backend PHP.
 
-1. Allez sur [https://supabase.com](https://supabase.com)
-2. Cliquez sur "Start your project"
-3. Connectez-vous avec GitHub ou créez un compte
-4. Cliquez sur "New Project"
-5. Choisissez votre organisation
-6. Donnez un nom à votre projet : `deliveryp2p`
-7. Choisissez un mot de passe pour la base de données
-8. Sélectionnez une région proche de vous
-9. Cliquez sur "Create new project"
+## 🚀 Étape 1: Création du Projet Supabase
 
-### 2. **Récupérer les clés API**
+### 1.1 Créer un compte Supabase
+1. Aller sur [supabase.com](https://supabase.com)
+2. Cliquer sur "Start your project"
+3. Se connecter avec GitHub ou créer un compte
 
-1. Dans votre projet Supabase, allez dans **Settings** > **API**
-2. Copiez les informations suivantes :
-   - **Project URL** : `https://your-project-ref.supabase.co`
-   - **anon public** : `eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...`
-   - **service_role secret** : `eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...`
+### 1.2 Créer un nouveau projet
+1. Cliquer sur "New Project"
+2. Choisir une organisation
+3. Remplir les informations :
+   - **Nom du projet** : `livraisonp2p`
+   - **Mot de passe de la base de données** : Choisir un mot de passe sécurisé
+   - **Région** : Choisir la région la plus proche (ex: West Europe)
+4. Cliquer sur "Create new project"
 
-### 3. **Créer les tables**
+### 1.3 Attendre l'initialisation
+- Le projet prend environ 2-3 minutes à s'initialiser
+- Vous recevrez un email de confirmation
 
-1. Allez dans **SQL Editor**
-2. Copiez le contenu du fichier `supabase-schema.sql`
-3. Collez-le dans l'éditeur SQL
-4. Cliquez sur "Run" pour exécuter le script
+## 🔑 Étape 2: Récupération des Clés API
 
-### 4. **Configurer les variables d'environnement**
+### 2.1 Accéder aux paramètres API
+1. Dans le tableau de bord Supabase, aller dans **Settings** (⚙️)
+2. Cliquer sur **API** dans le menu de gauche
 
-1. Créez un fichier `.env` à la racine du projet :
-```bash
-cp .env.example .env
+### 2.2 Récupérer les informations nécessaires
+Vous verrez plusieurs sections importantes :
+
+#### **Project URL**
+```
+https://your-project-id.supabase.co
 ```
 
-2. Modifiez le fichier `.env` avec vos vraies valeurs :
-```env
+#### **API Keys**
+- **anon public** : Clé publique pour les requêtes anonymes
+- **service_role secret** : Clé secrète pour les opérations administratives
+
+#### **Project API keys**
+```
+anon: eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...
+service_role: eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...
+```
+
+## 🗄️ Étape 3: Création de la Base de Données
+
+### 3.1 Accéder à l'éditeur SQL
+1. Dans le tableau de bord, aller dans **SQL Editor**
+2. Cliquer sur **New query**
+
+### 3.2 Exécuter le script SQL
+1. Copier le contenu du fichier `database/schema_complete.sql`
+2. Coller dans l'éditeur SQL
+3. Cliquer sur **Run** pour exécuter le script
+
+### 3.3 Vérifier la création des tables
+1. Aller dans **Table Editor**
+2. Vérifier que toutes les tables sont créées :
+   - `users`
+   - `ads`
+   - `proposals`
+   - `deliveries`
+   - `evaluations`
+   - `chat_messages`
+   - `notifications`
+   - `web_push_subscriptions`
+   - `parcel_photos`
+   - `delivery_photos`
+
+## ⚙️ Étape 4: Configuration PHP
+
+### 4.1 Créer le fichier .env
+1. Copier le fichier `.env.example` vers `.env`
+2. Remplir les variables avec vos clés Supabase :
+
+```bash
 # Configuration Supabase
-SUPABASE_URL=https://your-project-ref.supabase.co
-SUPABASE_ANON_KEY=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...
-SUPABASE_SERVICE_ROLE_KEY=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...
+SUPABASE_URL=https://your-project-id.supabase.co
+SUPABASE_ANON_KEY=your_anon_key
+SUPABASE_SERVICE_ROLE_KEY=your_service_role_key
+
+# Configuration Google Maps
+GOOGLE_MAPS_API_KEY=your_google_maps_api_key
 
 # Configuration de l'application
 APP_ENV=development
 APP_DEBUG=true
-APP_NAME=DeliveryP2P
-
-# Configuration JWT
-JWT_SECRET=your-32-character-jwt-secret-key
-JWT_EXPIRATION=3600
-JWT_REFRESH_EXPIRATION=604800
-
-# Configuration de chiffrement
-ENCRYPTION_KEY=your-32-character-encryption-key
-QR_ENCRYPTION_KEY=your-32-character-qr-encryption-key
-QR_CODE_SECRET=your-qr-code-specific-secret
+APP_URL=http://localhost:8000
 
 # Configuration de sécurité
-PASSWORD_SALT=your-password-salt-here
-CORS_ALLOWED_ORIGINS=*
-
-# Configuration des logs
-LOG_LEVEL=debug
-LOG_PATH=./storage/logs
-
-# Configuration du cache
-CACHE_ENABLED=true
-CACHE_TTL=3600
-CACHE_PATH=./storage/cache
-
-# Configuration des QR codes
-QR_CODE_SIZE=300
-QR_CODE_MARGIN=10
-QR_CODE_ERROR_CORRECTION=M
-
-# Configuration des livraisons
-DELIVERY_RADIUS_KM=0.5
-DELIVERY_TIMEOUT_MINUTES=30
-MAX_DELIVERY_WEIGHT_KG=25
-
-# Configuration des commissions
-PLATFORM_COMMISSION_PERCENT=15
-MINIMUM_DELIVERY_FEE=5
-
-# Configuration des notifications
-PUSH_NOTIFICATIONS_ENABLED=true
-EMAIL_NOTIFICATIONS_ENABLED=true
-SMS_NOTIFICATIONS_ENABLED=false
-
-# Configuration SMTP
-SMTP_HOST=smtp.gmail.com
-SMTP_PORT=587
-SMTP_USERNAME=your-email@gmail.com
-SMTP_PASSWORD=your-app-password
-SMTP_FROM_EMAIL=noreply@deliveryp2p.com
-SMTP_FROM_NAME=DeliveryP2P
-
-# Configuration des paiements (Stripe)
-STRIPE_PUBLIC_KEY=pk_test_your-stripe-public-key
-STRIPE_SECRET_KEY=sk_test_your-stripe-secret-key
-STRIPE_WEBHOOK_SECRET=whsec_your-webhook-secret
-
-# Configuration des notifications push (Firebase)
-FIREBASE_SERVER_KEY=your-firebase-server-key
-
-# Configuration SendGrid
-SENDGRID_API_KEY=your-sendgrid-api-key
-
-# Configuration Twilio
-TWILIO_ACCOUNT_SID=your-twilio-account-sid
-TWILIO_AUTH_TOKEN=your-twilio-auth-token
-
-# Configuration de géolocalisation
-GOOGLE_MAPS_API_KEY=your-google-maps-api-key
-MAPBOX_ACCESS_TOKEN=your-mapbox-access-token
-
-# Configuration des timezones
-TIMEZONE=Europe/Paris
-LOCALE=fr_FR.UTF-8
-
-# Configuration de la mémoire
-MEMORY_LIMIT=256M
-MAX_EXECUTION_TIME=30
-
-# Configuration PHP
-PHP_VERSION=8.2
-COMPOSER_MEMORY_LIMIT=-1
+JWT_SECRET=your_jwt_secret_key_here
+SESSION_SECRET=your_session_secret_key_here
 ```
 
-### 5. **Configurer Render (Production)**
+### 4.2 Vérifier la configuration
+Le fichier `app/config/database.php` est déjà configuré pour utiliser ces variables d'environnement.
 
-1. Allez sur [https://render.com](https://render.com)
-2. Dans votre service API, allez dans **Environment**
-3. Ajoutez les variables d'environnement :
-   - `SUPABASE_URL`
-   - `SUPABASE_ANON_KEY`
-   - `SUPABASE_SERVICE_ROLE_KEY`
-   - `JWT_SECRET`
-   - `ENCRYPTION_KEY`
-   - `QR_CODE_SECRET`
+## 🔧 Étape 5: Configuration du Storage
 
-### 6. **Tester la configuration**
+### 5.1 Créer un bucket pour les fichiers
+1. Aller dans **Storage** dans le tableau de bord
+2. Cliquer sur **New bucket**
+3. Nommer le bucket : `livraisonp2p`
+4. Choisir **Public** pour les fichiers accessibles publiquement
+5. Cliquer sur **Create bucket**
 
-1. Redémarrez votre serveur local :
-```bash
-cd api
-php -S localhost:8000 index-simple.php
+### 5.2 Configurer les politiques RLS
+1. Aller dans **Storage** > **Policies**
+2. Créer des politiques pour sécuriser l'accès aux fichiers
+
+Exemple de politique pour les photos de véhicules :
+```sql
+CREATE POLICY "Users can upload their own vehicle photos" ON storage.objects
+FOR INSERT WITH CHECK (
+  bucket_id = 'livraisonp2p' AND 
+  auth.uid()::text = (storage.foldername(name))[1]
+);
 ```
 
-2. Testez la connexion :
-```bash
-./test-supabase.sh
+## 📧 Étape 6: Configuration des Emails (Optionnel)
+
+### 6.1 Configurer l'authentification par email
+1. Aller dans **Authentication** > **Settings**
+2. Configurer les templates d'email personnalisés
+3. Activer la confirmation d'email si nécessaire
+
+### 6.2 Templates d'email recommandés
+- **Confirmation d'inscription**
+- **Réinitialisation de mot de passe**
+- **Notifications de livraison**
+
+## 🔐 Étape 7: Configuration de la Sécurité
+
+### 7.1 Politiques RLS (Row Level Security)
+Les politiques RLS sont déjà incluses dans le script SQL. Vérifiez qu'elles sont activées :
+
+```sql
+-- Vérifier que RLS est activé
+SELECT schemaname, tablename, rowsecurity 
+FROM pg_tables 
+WHERE schemaname = 'public';
 ```
 
-3. Ou testez manuellement :
-```bash
-curl -X GET "http://localhost:8000/supabase/test"
-```
+### 7.2 Configurer les politiques personnalisées
+Si nécessaire, ajustez les politiques selon vos besoins de sécurité.
 
-## 🧪 **Tests de Validation**
+## 🧪 Étape 8: Test de Connexion
 
-### **Test de connexion**
-```bash
-curl -X GET "http://localhost:8000/supabase/test"
-```
+### 8.1 Tester la connexion PHP
+Créer un script de test simple :
 
-**Réponse attendue :**
-```json
-{
-    "success": true,
-    "message": "Connexion Supabase réussie",
-    "timestamp": "2025-06-28T12:00:00+02:00",
-    "config": {
-        "url_configured": true,
-        "anon_key_configured": true,
-        "service_key_configured": true
-    }
+```php
+<?php
+require_once 'vendor/autoload.php';
+
+use App\Services\SupabaseService;
+
+$supabase = new SupabaseService();
+
+// Test de connexion
+$result = $supabase->select('users', [], '*', 1);
+if (isset($result['error'])) {
+    echo "Erreur de connexion: " . $result['message'];
+} else {
+    echo "Connexion réussie !";
 }
 ```
 
-### **Test de création d'utilisateur**
-```bash
-curl -X POST "http://localhost:8000/supabase/users" \
-  -H "Content-Type: application/json" \
-  -d '{
-    "email": "test@deliveryp2p.com",
-    "password": "testpassword123",
-    "first_name": "Test",
-    "last_name": "User",
-    "role": "client"
-  }'
+### 8.2 Tester l'authentification
+```php
+// Test d'inscription
+$authResult = $supabase->signUp('test@example.com', 'password123', [
+    'data' => [
+        'first_name' => 'Test',
+        'last_name' => 'User',
+        'role' => 'expeditor'
+    ]
+]);
+
+if (!isset($authResult['error'])) {
+    echo "Inscription réussie !";
+}
 ```
 
-### **Test de création de QR code**
-```bash
-curl -X POST "http://localhost:8000/supabase/qr" \
-  -H "Content-Type: application/json" \
-  -d '{
-    "data": "https://deliveryp2p.onrender.com/delivery/123",
-    "size": 300
-  }'
-```
+## 📱 Étape 9: Configuration des Notifications
 
-### **Test de création de livraison**
-```bash
-curl -X POST "http://localhost:8000/supabase/delivery" \
-  -H "Content-Type: application/json" \
-  -d '{
-    "client_id": "test-client-123",
-    "pickup_address": "123 Rue de la Paix, Paris",
-    "delivery_address": "456 Avenue des Champs, Paris",
-    "weight": 2.5,
-    "price": 15.50
-  }'
-```
-
-## 🔧 **Dépannage**
-
-### **Erreur "Could not resolve host"**
-- Vérifiez que l'URL Supabase est correcte
-- Assurez-vous que le projet est actif
-
-### **Erreur "Invalid API key"**
-- Vérifiez que les clés API sont correctes
-- Assurez-vous que les clés sont copiées entièrement
-
-### **Erreur "Table does not exist"**
-- Exécutez le script SQL dans Supabase
-- Vérifiez que les tables sont créées
-
-### **Erreur "RLS policy"**
-- Vérifiez que les politiques RLS sont configurées
-- Testez avec un utilisateur authentifié
-
-## 📊 **Monitoring**
-
-### **Vérifier les logs Supabase**
-1. Allez dans **Logs** dans votre projet Supabase
-2. Surveillez les requêtes API
-3. Vérifiez les erreurs
-
-### **Vérifier les métriques**
-1. Allez dans **Dashboard** > **Usage**
-2. Surveillez l'utilisation de la base de données
-3. Vérifiez les performances
-
-## 🚀 **Déploiement**
-
-### **Redéployer l'API**
-```bash
-./deploy-api.sh
-```
-
-### **Vérifier en production**
-```bash
-curl -X GET "https://deliveryp2p-api.onrender.com/supabase/test"
-```
-
-## ✅ **Validation Finale**
-
-Une fois configuré, vous devriez voir :
-
-1. ✅ **Connexion Supabase** : Succès
-2. ✅ **Création utilisateur** : Succès
-3. ✅ **Création QR code** : Succès
-4. ✅ **Création livraison** : Succès
-5. ✅ **Récupération données** : Succès
-
-**🎉 Votre application DeliveryP2P est maintenant connectée à Supabase !** 
+### 9.1 Activer Realtime
+1. Aller dans **Database** > **Replication**
+2. Activer Realtime pour les tables nécessaires :
+   - `chat_messages`
+   - `notifications`
+ 

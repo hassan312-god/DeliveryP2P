@@ -1,0 +1,128 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Créer une annonce - LivraisonP2P</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+    <style>
+        body { background: #f8f9fa; }
+        .form-section { background: #fff; border-radius: 8px; box-shadow: 0 2px 8px #0001; padding: 2rem; margin-top: 2rem; }
+    </style>
+</head>
+<body>
+<div class="container">
+    <div class="row justify-content-center">
+        <div class="col-lg-8">
+            <div class="form-section">
+                <h2 class="mb-4">Créer une annonce</h2>
+                <form id="annonceForm" enctype="multipart/form-data" novalidate>
+                    <div class="mb-3">
+                        <label for="titre" class="form-label">Titre de l'annonce</label>
+                        <input type="text" class="form-control" id="titre" name="titre" required>
+                    </div>
+                    <div class="mb-3">
+                        <label for="description" class="form-label">Description du colis</label>
+                        <textarea class="form-control" id="description" name="description" rows="3" required></textarea>
+                    </div>
+                    <div class="row">
+                        <div class="col-md-6 mb-3">
+                            <label for="adresse_depart" class="form-label">Adresse de départ</label>
+                            <input type="text" class="form-control" id="adresse_depart" name="adresse_depart" required autocomplete="off">
+                        </div>
+                        <div class="col-md-6 mb-3">
+                            <label for="adresse_arrivee" class="form-label">Adresse d'arrivée</label>
+                            <input type="text" class="form-control" id="adresse_arrivee" name="adresse_arrivee" required autocomplete="off">
+                        </div>
+                    </div>
+                    <div class="row">
+                        <div class="col-md-4 mb-3">
+                            <label for="type_colis" class="form-label">Type de colis</label>
+                            <select class="form-select" id="type_colis" name="type_colis" required>
+                                <option value="">Choisir...</option>
+                                <option value="petit">Petit (&lt; 5kg)</option>
+                                <option value="moyen">Moyen (5-15kg)</option>
+                                <option value="grand">Grand (&gt; 15kg)</option>
+                            </select>
+                        </div>
+                        <div class="col-md-4 mb-3">
+                            <label for="poids" class="form-label">Poids estimé (kg)</label>
+                            <input type="number" class="form-control" id="poids" name="poids" min="0.1" step="0.1" required>
+                        </div>
+                        <div class="col-md-4 mb-3">
+                            <label for="dimensions" class="form-label">Dimensions (cm)</label>
+                            <input type="text" class="form-control" id="dimensions" name="dimensions" placeholder="L x l x h" required>
+                        </div>
+                    </div>
+                    <div class="row">
+                        <div class="col-md-4 mb-3">
+                            <label for="prix_propose" class="form-label">Prix proposé (€)</label>
+                            <input type="number" class="form-control" id="prix_propose" name="prix_propose" min="1" step="0.5" required>
+                        </div>
+                        <div class="col-md-4 mb-3">
+                            <label for="date_limite" class="form-label">Date limite de livraison</label>
+                            <input type="datetime-local" class="form-control" id="date_limite" name="date_limite" required>
+                        </div>
+                        <div class="col-md-4 mb-3">
+                            <label for="mode_paiement" class="form-label">Mode de paiement</label>
+                            <select class="form-select" id="mode_paiement" name="mode_paiement" required>
+                                <option value="">Choisir...</option>
+                                <option value="especes">Espèces</option>
+                                <option value="carte">Carte bancaire</option>
+                                <option value="virement">Virement</option>
+                            </select>
+                        </div>
+                    </div>
+                    <div class="mb-3">
+                        <label for="photos" class="form-label">Photos du colis</label>
+                        <input class="form-control" type="file" id="photos" name="photos[]" accept="image/*" multiple>
+                    </div>
+                    <div class="form-check mb-3">
+                        <input class="form-check-input" type="checkbox" value="1" id="fragile" name="fragile">
+                        <label class="form-check-label" for="fragile">Colis fragile</label>
+                    </div>
+                    <div class="form-check mb-3">
+                        <input class="form-check-input" type="checkbox" value="1" id="urgent" name="urgent">
+                        <label class="form-check-label" for="urgent">Livraison urgente</label>
+                    </div>
+                    <button type="submit" class="btn btn-primary w-100">Publier l'annonce</button>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Bootstrap JS -->
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+<!-- Google Places API pour autocomplétion d'adresse (remplacer VOTRE_CLE_API) -->
+<script src="https://maps.googleapis.com/maps/api/js?key=VOTRE_CLE_API&libraries=places"></script>
+<script>
+// Autocomplétion d'adresse Google Places
+function initAutocomplete() {
+    const departInput = document.getElementById('adresse_depart');
+    const arriveeInput = document.getElementById('adresse_arrivee');
+    if (departInput) new google.maps.places.Autocomplete(departInput, { types: ['geocode'] });
+    if (arriveeInput) new google.maps.places.Autocomplete(arriveeInput, { types: ['geocode'] });
+}
+window.initAutocomplete = initAutocomplete;
+window.addEventListener('load', () => {
+    if (typeof google !== 'undefined') initAutocomplete();
+});
+
+// Validation Bootstrap
+(() => {
+    'use strict';
+    const forms = document.querySelectorAll('.needs-validation');
+    Array.from(forms).forEach(form => {
+        form.addEventListener('submit', event => {
+            if (!form.checkValidity()) {
+                event.preventDefault();
+                event.stopPropagation();
+            }
+            form.classList.add('was-validated');
+        }, false);
+    });
+})();
+</script>
+</body>
+</html> 

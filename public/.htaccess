@@ -1,17 +1,77 @@
+# =====================================================
 # Configuration Apache pour LivraisonP2P
-# Réécriture d'URL et sécurité
+# =====================================================
 
-# Activation du module de réécriture
+# Activer le module de réécriture
 RewriteEngine On
 
-# Headers de sécurité
-Header always set X-Content-Type-Options nosniff
-Header always set X-Frame-Options DENY
-Header always set X-XSS-Protection "1; mode=block"
-Header always set Referrer-Policy "strict-origin-when-cross-origin"
-Header always set Strict-Transport-Security "max-age=31536000; includeSubDomains"
+# Définir le répertoire de base
+RewriteBase /
 
-# Compression gzip
+# Rediriger toutes les requêtes vers index.php sauf pour les fichiers existants
+RewriteCond %{REQUEST_FILENAME} !-f
+RewriteCond %{REQUEST_FILENAME} !-d
+RewriteRule ^(.*)$ index.php [QSA,L]
+
+# =====================================================
+# SÉCURITÉ
+# =====================================================
+
+# Empêcher l'accès aux fichiers sensibles
+<Files ".env">
+    Order allow,deny
+    Deny from all
+</Files>
+
+<Files "composer.json">
+    Order allow,deny
+    Deny from all
+</Files>
+
+<Files "composer.lock">
+    Order allow,deny
+    Deny from all
+</Files>
+
+# Empêcher l'accès aux fichiers de configuration
+<FilesMatch "\.(env|config|ini|log)$">
+    Order allow,deny
+    Deny from all
+</FilesMatch>
+
+# Empêcher l'accès aux dossiers sensibles
+RedirectMatch 403 ^/app/?$
+RedirectMatch 403 ^/vendor/?$
+RedirectMatch 403 ^/database/?$
+RedirectMatch 403 ^/tests/?$
+
+# =====================================================
+# HEADERS DE SÉCURITÉ
+# =====================================================
+
+# Protection XSS
+Header always set X-XSS-Protection "1; mode=block"
+
+# Empêcher le sniffing de type MIME
+Header always set X-Content-Type-Options "nosniff"
+
+# Empêcher le clickjacking
+Header always set X-Frame-Options "SAMEORIGIN"
+
+# Politique de sécurité du contenu (CSP)
+Header always set Content-Security-Policy "default-src 'self'; script-src 'self' 'unsafe-inline' https://cdn.jsdelivr.net https://maps.googleapis.com; style-src 'self' 'unsafe-inline' https://cdn.jsdelivr.net https://fonts.googleapis.com; font-src 'self' https://fonts.gstatic.com; img-src 'self' data: https:; connect-src 'self' https://maps.googleapis.com; frame-src 'self';"
+
+# Référer Policy
+Header always set Referrer-Policy "strict-origin-when-cross-origin"
+
+# Permissions Policy
+Header always set Permissions-Policy "geolocation=(), microphone=(), camera=()"
+
+# =====================================================
+# COMPRESSION
+# =====================================================
+
+# Activer la compression GZIP
 <IfModule mod_deflate.c>
     AddOutputFilterByType DEFLATE text/plain
     AddOutputFilterByType DEFLATE text/html
@@ -25,58 +85,82 @@ Header always set Strict-Transport-Security "max-age=31536000; includeSubDomains
     AddOutputFilterByType DEFLATE application/json
 </IfModule>
 
-# Cache des ressources statiques
+# =====================================================
+# CACHE
+# =====================================================
+
+# Cache pour les ressources statiques
 <IfModule mod_expires.c>
     ExpiresActive On
-    ExpiresByType text/css "access plus 1 month"
-    ExpiresByType application/javascript "access plus 1 month"
-    ExpiresByType image/png "access plus 1 month"
+    
+    # Images
     ExpiresByType image/jpg "access plus 1 month"
     ExpiresByType image/jpeg "access plus 1 month"
     ExpiresByType image/gif "access plus 1 month"
+    ExpiresByType image/png "access plus 1 month"
+    ExpiresByType image/webp "access plus 1 month"
     ExpiresByType image/svg+xml "access plus 1 month"
+    
+    # CSS et JavaScript
+    ExpiresByType text/css "access plus 1 month"
+    ExpiresByType application/javascript "access plus 1 month"
+    ExpiresByType application/x-javascript "access plus 1 month"
+    
+    # Fonts
+    ExpiresByType font/woff "access plus 1 year"
+    ExpiresByType font/woff2 "access plus 1 year"
+    ExpiresByType application/font-woff "access plus 1 year"
+    ExpiresByType application/font-woff2 "access plus 1 year"
+    
+    # HTML
+    ExpiresByType text/html "access plus 1 hour"
 </IfModule>
 
-# Règles de réécriture pour l'API - CORRECTION
-# Redirection vers l'API pour tous les endpoints commençant par /auth, /deliveries, /qr, /tracking, /notifications, /payments, /admin
-RewriteRule ^(auth|deliveries|qr|tracking|notifications|payments|admin)(/.*)?$ ../api/index.php [QSA,L]
+# =====================================================
+# GESTION DES ERREURS
+# =====================================================
 
-# Redirection vers le health check
-RewriteRule ^health$ ../api/health.php [QSA,L]
+# Page d'erreur 404 personnalisée
+ErrorDocument 404 /404
 
-# Redirection vers le test simple
-RewriteRule ^test-simple$ ../api/test-simple.php [QSA,L]
+# Page d'erreur 500 personnalisée
+ErrorDocument 500 /500
 
-# Redirection vers les fichiers statiques s'ils existent
-RewriteCond %{REQUEST_FILENAME} -f
-RewriteRule ^(.*)$ $1 [L]
+# =====================================================
+# LIMITES DE TAILLE
+# =====================================================
 
-# Redirection par défaut vers l'index
-RewriteRule ^(.*)$ index.html [QSA,L]
-
-# Protection des fichiers sensibles
-<Files "*.env">
-    Order allow,deny
-    Deny from all
-</Files>
-
-<Files "*.log">
-    Order allow,deny
-    Deny from all
-</Files>
-
-<Files "composer.*">
-    Order allow,deny
-    Deny from all
-</Files>
-
-# Limitation de la taille des uploads
+# Limiter la taille des uploads
 php_value upload_max_filesize 10M
 php_value post_max_size 10M
-php_value max_execution_time 30
-php_value memory_limit 256M
+php_value max_execution_time 300
+php_value max_input_time 300
 
-# Configuration des erreurs
-php_flag display_errors off
-php_flag log_errors on
-php_value error_log /dev/stderr 
+# =====================================================
+# OPTIMISATIONS PHP
+# =====================================================
+
+# Activer l'opcache si disponible
+php_flag opcache.enable On
+php_flag opcache.enable_cli On
+php_value opcache.memory_consumption 128
+php_value opcache.interned_strings_buffer 8
+php_value opcache.max_accelerated_files 4000
+php_flag opcache.revalidate_freq 2
+php_flag opcache.fast_shutdown On
+
+# =====================================================
+# REDIRECTIONS
+# =====================================================
+
+# Rediriger www vers non-www (optionnel)
+# RewriteCond %{HTTP_HOST} ^www\.(.*)$ [NC]
+# RewriteRule ^(.*)$ https://%1/$1 [R=301,L]
+
+# Rediriger HTTP vers HTTPS (optionnel)
+# RewriteCond %{HTTPS} off
+# RewriteRule ^(.*)$ https://%{HTTP_HOST}%{REQUEST_URI} [L,R=301]
+
+# =====================================================
+# FIN DE LA CONFIGURATION
+# ===================================================== 

@@ -154,5 +154,144 @@
     </div>
     <div id="toastContainer"></div>
     <footer style="text-align:center;margin:2rem 0 1rem 0;color:#888;font-size:0.97rem;">&copy; 2025 LivraisonP2P. Tous droits réservés.</footer>
+
+    <script>
+        // Configuration API
+        const API_URL = 'https://deliveryp2p-api.onrender.com';
+        
+        // Fonctions utilitaires
+        function showToast(message, type = 'info') {
+            const toast = document.createElement('div');
+            toast.className = `toast toast-${type}`;
+            toast.textContent = message;
+            toast.style.cssText = `
+                position: fixed;
+                top: 20px;
+                right: 20px;
+                background: ${type === 'success' ? '#4CAF50' : type === 'error' ? '#f44336' : '#2196F3'};
+                color: white;
+                padding: 15px 20px;
+                border-radius: 5px;
+                z-index: 1000;
+                animation: slideIn 0.3s ease;
+            `;
+            
+            document.getElementById('toastContainer').appendChild(toast);
+            
+            setTimeout(() => {
+                toast.remove();
+            }, 5000);
+        }
+
+        function showLoading(show = true) {
+            const submitBtn = document.querySelector('#registerForm button[type="submit"]');
+            if (show) {
+                submitBtn.disabled = true;
+                submitBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Création en cours...';
+            } else {
+                submitBtn.disabled = false;
+                submitBtn.innerHTML = 'Créer mon compte';
+            }
+        }
+
+        // Fonction d'inscription avec Supabase
+        async function registerUser(userData) {
+            try {
+                const response = await fetch(`${API_URL}/supabase/profiles`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({
+                        first_name: userData.prenom,
+                        last_name: userData.nom,
+                        phone: userData.phone || '',
+                        role: userData.role,
+                        email: userData.email // Pour référence future
+                    })
+                });
+
+                const result = await response.json();
+                
+                if (result.success) {
+                    showToast('Compte créé avec succès ! Redirection...', 'success');
+                    
+                    // Stocker les informations utilisateur
+                    localStorage.setItem('user', JSON.stringify({
+                        id: result.data?.id,
+                        first_name: userData.prenom,
+                        last_name: userData.nom,
+                        email: userData.email,
+                        role: userData.role
+                    }));
+                    
+                    // Redirection vers le dashboard
+                    setTimeout(() => {
+                        window.location.href = userData.role === 'livreur' ? '/driver/dashboard.html' : '/client/dashboard.html';
+                    }, 2000);
+                    
+                    return true;
+                } else {
+                    throw new Error(result.error || 'Erreur lors de la création du compte');
+                }
+            } catch (error) {
+                console.error('Erreur inscription:', error);
+                showToast(`Erreur: ${error.message}`, 'error');
+                return false;
+            }
+        }
+
+        // Gestion du formulaire d'inscription
+        document.getElementById('registerForm').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            
+            const formData = new FormData(e.target);
+            const userData = {
+                prenom: formData.get('prenom'),
+                nom: formData.get('nom'),
+                email: formData.get('email'),
+                mot_de_passe: formData.get('mot_de_passe'),
+                role: formData.get('role')
+            };
+
+            // Validation
+            if (userData.mot_de_passe.length < 6) {
+                showToast('Le mot de passe doit contenir au moins 6 caractères', 'error');
+                return;
+            }
+
+            showLoading(true);
+            
+            const success = await registerUser(userData);
+            
+            showLoading(false);
+            
+            if (!success) {
+                // Le toast d'erreur est déjà affiché dans registerUser
+                return;
+            }
+        });
+
+        // Connexion sociale (simulation)
+        function socialLogin(provider) {
+            showToast(`Connexion avec ${provider} en cours de développement...`, 'info');
+        }
+
+        // Test de connexion API au chargement
+        window.addEventListener('load', async () => {
+            try {
+                const response = await fetch(`${API_URL}/health`);
+                const result = await response.json();
+                
+                if (result.status === 'healthy') {
+                    console.log('✅ API connectée:', result);
+                } else {
+                    console.warn('⚠️ API non disponible');
+                }
+            } catch (error) {
+                console.error('❌ Erreur connexion API:', error);
+            }
+        });
+    </script>
 </body>
 </html> 

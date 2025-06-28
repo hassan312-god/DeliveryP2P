@@ -29,7 +29,9 @@ $routes = [
         '/test-connection' => 'test_connection',
         '/qr' => 'qr_test',
         '/supabase/test' => 'supabase_test',
-        '/supabase/profiles' => 'supabase_get_profiles'
+        '/supabase/profiles' => 'supabase_get_profiles',
+        '/supabase/qr' => 'supabase_get_qr',
+        '/supabase/delivery' => 'supabase_get_deliveries'
     ],
     'POST' => [
         '/qr/generate' => 'qr_generate',
@@ -253,6 +255,36 @@ function supabase_create_delivery() {
         'success' => $result['success'],
         'data' => $result['data'] ?? null,
         'message' => $result['message'] ?? $result['error'] ?? 'Livraison créée',
+        'timestamp' => date('c')
+    ];
+}
+
+// Fonction pour récupérer les QR codes
+function supabase_get_qr() {
+    require_once __DIR__ . '/SupabaseClient.php';
+    
+    $client = new SupabaseClient();
+    $result = $client->getQRCodes(['select' => 'id,data,size,status,created_at']);
+    
+    return [
+        'success' => $result['success'],
+        'data' => $result['data'] ?? [],
+        'count' => count($result['data'] ?? []),
+        'timestamp' => date('c')
+    ];
+}
+
+// Fonction pour récupérer les livraisons
+function supabase_get_deliveries() {
+    require_once __DIR__ . '/SupabaseClient.php';
+    
+    $client = new SupabaseClient();
+    $result = $client->getDeliveries(['select' => 'id,client_id,pickup_address,delivery_address,status,price,created_at']);
+    
+    return [
+        'success' => $result['success'],
+        'data' => $result['data'] ?? [],
+        'count' => count($result['data'] ?? []),
         'timestamp' => date('c')
     ];
 }

@@ -195,7 +195,7 @@ class Router
         $pattern = preg_replace('/\{[^}]+\}/', '([^/]+)', $pattern);
         $pattern = '#^' . $pattern . '$#';
         
-        return preg_match($pattern, $uri);
+        return (bool) preg_match($pattern, $uri);
     }
 
     /**

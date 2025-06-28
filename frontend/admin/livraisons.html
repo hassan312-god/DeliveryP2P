@@ -59,38 +59,6 @@
         </div>
     </main>
     <div id="toastContainer"></div>
-    <script src="/js/components/toast.js"></script>
-    <script src="/js/modules/auth.js"></script>
-    <script>
-        document.addEventListener('DOMContentLoaded', async function() {
-            if (window.AuthModule) {
-                const auth = new window.AuthModule();
-                const user = await auth.checkLogin();
-                if (!user || auth.currentProfile.role !== 'admin') {
-                    window.location.href = '/auth/login.html';
-                    return;
-                }
-                // TODO: Charger les livraisons depuis l'API
-                const livraisons = [
-                    { id: 1, colis: 'Colis #12345', client: 'Alice', livreur: 'Paul', statut: 'Livré', date: '12/04/2024' },
-                    { id: 2, colis: 'Colis #12344', client: 'Bob', livreur: 'Sarah', statut: 'En cours', date: '13/04/2024' }
-                ];
-                const tbody = document.getElementById('livraisonsTable').querySelector('tbody');
-                tbody.innerHTML = livraisons.map(liv => `
-                    <tr>
-                        <td>${liv.colis}</td>
-                        <td>${liv.client}</td>
-                        <td>${liv.livreur}</td>
-                        <td>${liv.statut}</td>
-                        <td>${liv.date}</td>
-                        <td>
-                            <button class="btn btn-primary btn-action btn-sm"><i class="fas fa-edit"></i></button>
-                            <button class="btn btn-danger btn-action btn-sm"><i class="fas fa-trash"></i></button>
-                        </td>
-                    </tr>
-                `).join('');
-            }
-        });
-    </script>
+    <footer style="text-align:center;margin:2rem 0 1rem 0;color:#888;font-size:0.97rem;">&copy; 2025 LivraisonP2P. Tous droits réservés.</footer>
 </body>
 </html> 

@@ -44,34 +44,6 @@
         </div>
     </main>
     <div id="toastContainer"></div>
-    <script src="/js/components/toast.js"></script>
-    <script src="/js/modules/auth.js"></script>
-    <script>
-        document.addEventListener('DOMContentLoaded', async function() {
-            if (window.AuthModule) {
-                const auth = new window.AuthModule();
-                const user = await auth.checkLogin();
-                if (!user || auth.currentProfile.role !== 'courier') {
-                    window.location.href = '/auth/login.html';
-                    return;
-                }
-                // TODO: Charger les demandes disponibles depuis l'API
-                const requests = [
-                    { id: 1, title: 'Colis #12347', details: 'Paris → Bordeaux, 2kg, Client: Alice' },
-                    { id: 2, title: 'Colis #12348', details: 'Paris → Nantes, 1.5kg, Client: Bob' }
-                ];
-                const list = document.getElementById('availableList');
-                list.innerHTML = requests.map(item => `
-                    <div class="available-item">
-                        <div class="available-item-header">
-                            <span class="available-item-title">${item.title}</span>
-                        </div>
-                        <div class="available-item-details">${item.details}</div>
-                        <button class="btn btn-primary btn-accept btn-sm"><i class="fas fa-check"></i> Accepter</button>
-                    </div>
-                `).join('');
-            }
-        });
-    </script>
+    <footer style="text-align:center;margin:2rem 0 1rem 0;color:#888;font-size:0.97rem;">&copy; 2025 LivraisonP2P. Tous droits réservés.</footer>
 </body>
 </html> 

@@ -258,45 +258,47 @@
     <!-- =================================================
          FOOTER
     ================================================== -->
-    <footer id="contact" class="app-footer">
+    <footer class="app-footer">
         <div class="app-container">
             <div class="footer-grid">
-                <div class="footer-col" style="grid-column: span 2;">
-                    <a href="/" class="nav-logo">
-                        <img src="./assets/icons/Service_De_Livraison_Avec_Concept_De_Masque___Vecteur_Gratuite-removebg-preview.png" alt="LivraisonP2P Logo" style="height:44px;width:auto;background:#fff;border-radius:50%;box-shadow:0 2px 8px rgba(0,0,0,0.07);border:2px solid #f59e42;padding:2px;object-fit:contain;vertical-align:middle;">
-                        LivraisonP2P
-                    </a>
-                    <p style="margin-top: 1rem; max-width: 350px;">
-                        Votre partenaire de confiance pour des livraisons peer-to-peer rapides, sécurisées et intelligentes.
-                    </p>
-                </div>
                 <div class="footer-col">
-                    <h4>Société</h4>
+                    <h4>LivraisonP2P</h4>
                     <ul>
+                        <li><a href="#home">Accueil</a></li>
+                        <li><a href="#services">Services</a></li>
                         <li><a href="#about">À propos</a></li>
-                        <li><a href="#">Carrières</a></li>
-                        <li><a href="#">Presse</a></li>
+                        <li><a href="#contact">Contact</a></li>
                     </ul>
                 </div>
                 <div class="footer-col">
-                    <h4>Designs</h4>
+                    <h4>Services</h4>
                     <ul>
-                        <li><a href="#">Devenir client</a></li>
-                        <li><a href="#">Devenir livreur</a></li>
-                        <li><a href="#">Tarifs</a></li>
+                        <li><a href="#services">Livraison Express</a></li>
+                        <li><a href="#services">Groupage & Tournées</a></li>
+                        <li><a href="#services">Logistique E-commerce</a></li>
+                        <li><a href="#services">Objets fragiles</a></li>
                     </ul>
                 </div>
                 <div class="footer-col">
-                    <h4>Ressources</h4>
+                    <h4>Support</h4>
                     <ul>
-                        <li><a href="#">Blog</a></li>
-                        <li><a href="#">Centre d'aide</a></li>
-                        <li><a href="#">Partenaires</a></li>
+                        <li><a href="mailto:support@livraisonp2p.com">Email</a></li>
+                        <li><a href="tel:+221771234567">Téléphone</a></li>
+                        <li><a href="/auth/login.html">Connexion</a></li>
+                        <li><a href="/auth/register.html">Inscription</a></li>
+                    </ul>
+                </div>
+                <div class="footer-col">
+                    <h4>Légal</h4>
+                    <ul>
+                        <li><a href="#">Conditions d'utilisation</a></li>
+                        <li><a href="#">Politique de confidentialité</a></li>
+                        <li><a href="#">Mentions légales</a></li>
                     </ul>
                 </div>
             </div>
             <div class="footer-bottom">
-                &copy; 2025 LivraisonP2P. Tous droits réservés.
+                <p>&copy; 2025 LivraisonP2P. Tous droits réservés.</p>
             </div>
         </div>
     </footer>
@@ -304,23 +306,5 @@
 
     <!-- Toast Container -->
     <div id="toastContainer" class="fixed top-4 right-4 z-50"></div>
-
-    <!-- Scripts -->
-    <script src="/config.js"></script>
-    <script src="/js/components/toast.js"></script>
-    <script src="/js/app.js"></script>
-    <script>
-        document.addEventListener('DOMContentLoaded', () => {
-            // Smooth scrolling for nav links
-            document.querySelectorAll('a[href^="#"]').forEach(anchor => {
-                anchor.addEventListener('click', function (e) {
-                    e.preventDefault();
-                    document.querySelector(this.getAttribute('href')).scrollIntoView({
-                        behavior: 'smooth'
-                    });
-                });
-            });
-        });
-    </script>
 </body>
 </html>

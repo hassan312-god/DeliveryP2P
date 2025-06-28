@@ -43,81 +43,10 @@
             </div>
             <div class="track-list" id="trackList">
                 <!-- Les éléments de suivi seront injectés ici -->
-                <div id="mapSuivi" style="height:220px;border-radius:12px;margin:1.5rem 0;"></div>
             </div>
         </div>
     </main>
     <div id="toastContainer"></div>
-    <script src="/config.js"></script>
-    <script src="/js/components/toast.js"></script>
-    <script src="/js/modules/auth.js"></script>
-    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
-    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
-    <script>
-        document.addEventListener('DOMContentLoaded', async function() {
-            if (window.AuthModule) {
-                const auth = new window.AuthModule();
-                const user = await auth.checkLogin();
-                if (!user || auth.currentProfile.role !== 'client') {
-                    window.location.href = '/auth/login.html';
-                    return;
-                }
-                // TODO: Charger le suivi réel depuis l'API
-                const deliveries = [
-                    { id: 1, title: 'Colis #12345', status: 'En cours', statusClass: 'status-inprogress', details: 'Paris → Lyon, 2kg, Livreur: Paul' },
-                    { id: 2, title: 'Colis #12344', status: 'Livré', statusClass: 'status-delivered', details: 'Paris → Marseille, 1.5kg, Livreur: Sarah' },
-                    { id: 3, title: 'Colis #12343', status: 'Annulé', statusClass: 'status-cancelled', details: 'Paris → Lille, 3kg, Livreur: Max' }
-                ];
-                const list = document.getElementById('trackList');
-                list.innerHTML = deliveries.map(item => `
-                    <div class="track-item">
-                        <div class="track-item-header">
-                            <span class="track-item-title">${item.title}</span>
-                            <span class="track-item-status ${item.statusClass}">${item.status}</span>
-                        </div>
-                        <div class="track-item-details">${item.details}</div>
-                    </div>
-                `).join('');
-            }
-        });
-        const livraisonId = 1; // À remplacer dynamiquement selon la livraison suivie
-        let map, group, livreurMarker = null;
-        setTimeout(() => {
-            if (document.getElementById('mapSuivi')) {
-                map = L.map('mapSuivi', { zoomControl: false, attributionControl: false });
-                group = L.featureGroup();
-                // Position simulée du livreur (sera mise à jour en temps réel)
-                let livreurLatLng = [48.8584, 2.2945];
-                livreurMarker = L.marker(livreurLatLng, {icon: L.icon({iconUrl: 'https://cdn-icons-png.flaticon.com/512/684/684908.png', iconSize: [32,32]})}).addTo(map).bindPopup('Livreur');
-                group.addLayer(livreurMarker);
-                // Position du client (géolocalisation navigateur)
-                if (navigator.geolocation) {
-                    navigator.geolocation.getCurrentPosition(function(pos) {
-                        const clientLatLng = [pos.coords.latitude, pos.coords.longitude];
-                        const clientMarker = L.marker(clientLatLng, {icon: L.icon({iconUrl: 'https://cdn-icons-png.flaticon.com/512/149/149071.png', iconSize: [32,32]})}).addTo(map).bindPopup('Vous (client)');
-                        group.addLayer(clientMarker);
-                        map.fitBounds(group.getBounds().pad(0.2));
-                    }, function() {
-                        map.setView(livreurLatLng, 13);
-                    });
-                } else {
-                    map.setView(livreurLatLng, 13);
-                }
-                // --- Supabase Realtime pour la position du livreur ---
-                const supabaseClient = window.supabase || supabase;
-                const channel = supabaseClient
-                  .channel('livraisons')
-                  .on('postgres_changes', { event: 'UPDATE', schema: 'public', table: 'livraisons', filter: `id=eq.${livraisonId}` }, payload => {
-                      // On suppose que la colonne s'appelle position_livreur et contient {latitude, longitude}
-                      const pos = payload.new.position_livreur;
-                      if (pos && livreurMarker) {
-                          livreurMarker.setLatLng([pos.latitude, pos.longitude]);
-                          map.fitBounds(group.getBounds().pad(0.2));
-                      }
-                  })
-                  .subscribe();
-            }
-        }, 300);
-    </script>
+    <footer style="text-align:center;margin:2rem 0 1rem 0;color:#888;font-size:0.97rem;">&copy; 2025 LivraisonP2P. Tous droits réservés.</footer>
 </body>
 </html> 

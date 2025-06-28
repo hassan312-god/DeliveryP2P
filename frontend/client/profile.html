@@ -129,68 +129,6 @@
         </div>
     </main>
     <div id="toastContainer"></div>
-    <script>
-        document.addEventListener('DOMContentLoaded', async function() {
-            if (window.AuthModule) {
-                const auth = new window.AuthModule();
-                const user = await auth.checkLogin();
-                if (!user || auth.currentProfile.role !== 'client') {
-                    window.location.href = '/auth/login.html';
-                    return;
-                }
-                // Remplir le formulaire avec les infos du profil
-                document.getElementById('prenom').value = auth.currentProfile.prenom || '';
-                document.getElementById('nom').value = auth.currentProfile.nom || '';
-                document.getElementById('email').value = auth.currentProfile.email || '';
-                document.getElementById('phone').value = auth.currentProfile.phone || '';
-                document.getElementById('adresse').value = auth.currentProfile.adresse || '';
-                document.getElementById('profileForm').addEventListener('submit', async function(e) {
-                    e.preventDefault();
-                    let errorDiv = document.getElementById('profileError');
-                    let successDiv = document.getElementById('profileSuccess');
-                    if (errorDiv) errorDiv.remove();
-                    if (successDiv) successDiv.remove();
-                    const formData = new FormData(this);
-                    const userData = Object.fromEntries(formData.entries());
-                    const btn = this.querySelector('button[type="submit"]');
-                    btn.classList.add('btn-loading'); btn.disabled = true;
-                    const result = await auth.updateProfile(userData);
-                    if (result && result.success) {
-                        const msg = document.createElement('div');
-                        msg.id = 'profileSuccess';
-                        msg.style = 'color: #27ae60; margin: 1rem 0; text-align: center; font-weight: 600;';
-                        msg.textContent = 'Profil mis à jour avec succès.';
-                        this.parentNode.insertBefore(msg, this.nextSibling);
-                    } else {
-                        const msg = document.createElement('div');
-                        msg.id = 'profileError';
-                        msg.style = 'color: #e74c3c; margin: 1rem 0; text-align: center; font-weight: 600;';
-                        msg.textContent = (result && result.error) ? result.error : 'Erreur lors de la mise à jour du profil.';
-                        this.parentNode.insertBefore(msg, this.nextSibling);
-                    }
-                    btn.classList.remove('btn-loading'); btn.disabled = false;
-                });
-                // Avatar dynamique
-                if (user && auth.currentProfile.avatar_url) {
-                    document.getElementById('navbarAvatarImg').src = auth.currentProfile.avatar_url;
-                    // Redirige le lien selon le rôle
-                    let profilUrl = '/client/profile.html';
-                    if (auth.currentProfile.role === 'admin') profilUrl = '/admin/profile.html';
-                    if (auth.currentProfile.role === 'courier') profilUrl = '/courier/profile.html';
-                    document.getElementById('navbarAvatar').href = profilUrl;
-                }
-            }
-        });
-        document.getElementById('profileImage').addEventListener('change', function(e) {
-            const file = e.target.files[0];
-            if (file) {
-                const reader = new FileReader();
-                reader.onload = function(evt) {
-                    document.getElementById('profileImagePreview').src = evt.target.result;
-                };
-                reader.readAsDataURL(file);
-            }
-        });
-    </script>
+    <footer style="text-align:center;margin:2rem 0 1rem 0;color:#888;font-size:0.97rem;">&copy; 2025 LivraisonP2P. Tous droits réservés.</footer>
 </body>
 </html> 

@@ -45,49 +45,6 @@
         </div>
     </main>
     <div id="toastContainer"></div>
-    <script src="/js/components/toast.js"></script>
-    <script src="/js/modules/auth.js"></script>
-    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-    <script>
-        document.addEventListener('DOMContentLoaded', async function() {
-            if (window.AuthModule) {
-                const auth = new window.AuthModule();
-                const user = await auth.checkLogin();
-                if (!user || auth.currentProfile.role !== 'courier') {
-                    window.location.href = '/auth/login.html';
-                    return;
-                }
-                // TODO: Charger les gains réels depuis l'API
-                const earnings = [
-                    { id: 1, title: 'Colis #12345', amount: '+40 €', details: 'Paris → Lyon, 2kg, 12/04/2024' },
-                    { id: 2, title: 'Colis #12344', amount: '+30 €', details: 'Paris → Marseille, 1.5kg, 10/04/2024' },
-                    { id: 3, title: 'Colis #12343', amount: '+50 €', details: 'Paris → Lille, 3kg, 09/04/2024' }
-                ];
-                const list = document.getElementById('earningsList');
-                list.innerHTML = earnings.map(item => `
-                    <div class="earnings-item">
-                        <div class="earnings-item-header">
-                            <span class="earnings-item-title">${item.title}</span>
-                            <span class="earnings-item-amount">${item.amount}</span>
-                        </div>
-                        <div class="earnings-item-details">${item.details}</div>
-                    </div>
-                `).join('');
-            }
-            const ctx = document.getElementById('gainsChart').getContext('2d');
-            new Chart(ctx, {
-                type: 'bar',
-                data: {
-                    labels: ['Jan', 'Fév', 'Mar', 'Avr', 'Mai'],
-                    datasets: [{
-                        label: 'Gains (€)',
-                        data: [120, 150, 90, 180, 130],
-                        backgroundColor: '#f59e42',
-                    }]
-                },
-                options: { plugins: { legend: { display: false } } }
-            });
-        });
-    </script>
+    <footer style="text-align:center;margin:2rem 0 1rem 0;color:#888;font-size:0.97rem;">&copy; 2025 LivraisonP2P. Tous droits réservés.</footer>
 </body>
 </html> 

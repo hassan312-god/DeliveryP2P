@@ -153,69 +153,6 @@
         </div>
     </div>
     <div id="toastContainer"></div>
-    <!-- CDN Supabase -->
-    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-    <script src="../config.js"></script>
-    <script src="../js/services/supabase.js"></script>
-    <script src="../js/components/toast.js"></script>
-    <script src="../js/modules/auth.js"></script>
-    <script>
-        function socialLogin(provider) {
-            if (window.AuthModule) {
-                const auth = new window.AuthModule();
-                auth.loginWithProvider(provider);
-            }
-        }
-        document.addEventListener('DOMContentLoaded', function() {
-            // Pré-remplir le rôle si présent dans l'URL
-            const urlParams = new URLSearchParams(window.location.search);
-            const role = urlParams.get('role');
-            if (role) document.getElementById('role').value = role;
-            // Gestion du formulaire
-            if (window.AuthModule) {
-                const auth = new window.AuthModule();
-                document.getElementById('registerForm').addEventListener('submit', async function(e) {
-                    e.preventDefault();
-                    // Nettoyer les anciens messages
-                    let errorDiv = document.getElementById('registerError');
-                    let successDiv = document.getElementById('registerSuccess');
-                    if (errorDiv) errorDiv.remove();
-                    if (successDiv) successDiv.remove();
-                    const formData = new FormData(this);
-                    const userData = Object.fromEntries(formData.entries());
-                    const submitButton = this.querySelector('button[type="submit"]');
-                    submitButton.classList.add('btn-loading');
-                    submitButton.disabled = true;
-                    const result = await auth.register(userData);
-                    submitButton.classList.remove('btn-loading');
-                    submitButton.disabled = false;
-                    if (result.success) {
-                        // Si l'email est déjà confirmé, rediriger selon le rôle
-                        if (result.user && result.user.email_confirmed_at) {
-                            let dashboard = '/client/dashboard.html';
-                            if (userData.role === 'admin') dashboard = '/admin/dashboard.html';
-                            if (userData.role === 'livreur' || userData.role === 'courier') dashboard = '/courier/dashboard.html';
-                            window.location.href = dashboard;
-                        } else {
-                            // Afficher un message de succès
-                            const msg = document.createElement('div');
-                            msg.id = 'registerSuccess';
-                            msg.style = 'color: #27ae60; margin: 1rem 0; text-align: center; font-weight: 600;';
-                            msg.textContent = result.message || 'Inscription réussie ! Vérifiez votre email pour activer votre compte.';
-                            this.parentNode.insertBefore(msg, this.nextSibling);
-                        }
-                    } else {
-                        // Afficher l'erreur
-                        const msg = document.createElement('div');
-                        msg.id = 'registerError';
-                        msg.style = 'color: #e74c3c; margin: 1rem 0; text-align: center; font-weight: 600;';
-                        msg.textContent = result.error || 'Erreur lors de l\'inscription.';
-                        this.parentNode.insertBefore(msg, this.nextSibling);
-                    }
-                });
-            }
-        });
-    </script>
     <footer style="text-align:center;margin:2rem 0 1rem 0;color:#888;font-size:0.97rem;">&copy; 2025 LivraisonP2P. Tous droits réservés.</footer>
 </body>
 </html> 

@@ -64,52 +64,6 @@
         </div>
     </main>
     <div id="toastContainer"></div>
-    <script src="../config.js"></script>
-    <script>
-    document.addEventListener('DOMContentLoaded', async function() {
-      if (window.AuthModule) {
-        const auth = new window.AuthModule();
-        const user = await auth.checkLogin();
-        if (!user || auth.currentProfile.role !== 'admin') {
-          window.location.href = '/auth/login.html';
-          return;
-        }
-        document.getElementById('prenomAdmin').textContent = auth.currentProfile.prenom || 'Admin';
-        // Charger stats (exemple)
-        // TODO: Remplacer par appel API réel
-        document.getElementById('nbUsers').textContent = '12';
-        document.getElementById('nbLivraisons').textContent = '34';
-        document.getElementById('nbPaiements').textContent = '20';
-      } else {
-        alert('Erreur lors de l\'initialisation de l\'application');
-      }
-    });
-    </script>
-    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
-    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
-    <script>
-        // Chart.js exemple
-        const ctx = document.getElementById('usersChart').getContext('2d');
-        new Chart(ctx, {
-            type: 'doughnut',
-            data: {
-                labels: ['Clients', 'Livreurs', 'Admins'],
-                datasets: [{
-                    data: [8, 3, 1],
-                    backgroundColor: ['#f59e42', '#6366f1', '#10b981'],
-                }]
-            },
-            options: { plugins: { legend: { display: false } }, cutout: '70%' }
-        });
-        // Leaflet.js exemple
-        setTimeout(() => {
-            if (document.getElementById('mapLivraisons')) {
-                const map = L.map('mapLivraisons', { zoomControl: false, attributionControl: false }).setView([48.8566, 2.3522], 11);
-                L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', { maxZoom: 19 }).addTo(map);
-                L.marker([48.8566, 2.3522]).addTo(map);
-            }
-        }, 300);
-    </script>
+    <footer style="text-align:center;margin:2rem 0 1rem 0;color:#888;font-size:0.97rem;">&copy; 2025 LivraisonP2P. Tous droits réservés.</footer>
 </body>
 </html> 

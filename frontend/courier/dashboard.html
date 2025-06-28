@@ -58,52 +58,6 @@
         </div>
     </main>
     <div id="toastContainer"></div>
-    <script src="/config.js"></script>
-    <script src="/js/components/toast.js"></script>
-    <script src="/js/modules/auth.js"></script>
-    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
-    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
-    <script>
-        document.addEventListener('DOMContentLoaded', async function() {
-            if (window.AuthModule) {
-                const auth = new window.AuthModule();
-                const user = await auth.checkLogin();
-                if (!user || auth.currentProfile.role !== 'courier') {
-                    window.location.href = '/auth/login.html';
-                    return;
-                }
-                document.getElementById('prenomLivreur').textContent = auth.currentProfile.prenom || 'Livreur';
-                // Charger stats (exemple)
-                // TODO: Remplacer par appel API réel
-                document.getElementById('nbActives').textContent = '3';
-                document.getElementById('nbGains').textContent = '120 €';
-            }
-        });
-        // Chart.js exemple
-        const ctx = document.getElementById('livraisonsChart').getContext('2d');
-        new Chart(ctx, {
-            type: 'line',
-            data: {
-                labels: ['Lun', 'Mar', 'Mer', 'Jeu', 'Ven'],
-                datasets: [{
-                    data: [1, 2, 1, 3, 2],
-                    backgroundColor: 'rgba(245,158,66,0.2)',
-                    borderColor: '#f59e42',
-                    fill: true,
-                    tension: 0.4
-                }]
-            },
-            options: { plugins: { legend: { display: false } } }
-        });
-        // Leaflet.js exemple
-        setTimeout(() => {
-            if (document.getElementById('mapGains')) {
-                const map = L.map('mapGains', { zoomControl: false, attributionControl: false }).setView([48.8566, 2.3522], 11);
-                L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', { maxZoom: 19 }).addTo(map);
-                L.marker([48.8566, 2.3522]).addTo(map);
-            }
-        }, 300);
-    </script>
+    <footer style="text-align:center;margin:2rem 0 1rem 0;color:#888;font-size:0.97rem;">&copy; 2025 LivraisonP2P. Tous droits réservés.</footer>
 </body>
 </html> 

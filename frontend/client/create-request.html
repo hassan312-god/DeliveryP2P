@@ -68,36 +68,6 @@
         </div>
     </main>
     <div id="toastContainer"></div>
-    <script src="/config.js"></script>
-    <script src="/js/components/toast.js"></script>
-    <script src="/js/modules/auth.js"></script>
-    <script>
-        document.addEventListener('DOMContentLoaded', async function() {
-            if (window.AuthModule) {
-                const auth = new window.AuthModule();
-                const user = await auth.checkLogin();
-                if (!user || auth.currentProfile.role !== 'client') {
-                    window.location.href = '/auth/login.html';
-                    return;
-                }
-                document.getElementById('createRequestForm').addEventListener('submit', async function(e) {
-                    e.preventDefault();
-                    let errorDiv = document.getElementById('requestError');
-                    let successDiv = document.getElementById('requestSuccess');
-                    if (errorDiv) errorDiv.remove();
-                    if (successDiv) successDiv.remove();
-                    const formData = new FormData(this);
-                    const btn = this.querySelector('button[type="submit"]');
-                    btn.classList.add('btn-loading'); btn.disabled = true;
-                    // TODO: Appel API pour créer la demande
-                    setTimeout(() => {
-                        btn.classList.remove('btn-loading'); btn.disabled = false;
-                        window.Toast.success('Demande envoyée !');
-                        window.location.href = '/client/dashboard.html';
-                    }, 1200);
-                });
-            }
-        });
-    </script>
+    <footer style="text-align:center;margin:2rem 0 1rem 0;color:#888;font-size:0.97rem;">&copy; 2025 LivraisonP2P. Tous droits réservés.</footer>
 </body>
 </html> 

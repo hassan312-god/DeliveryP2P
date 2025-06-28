@@ -45,62 +45,6 @@
         </div>
     </main>
     <div id="toastContainer"></div>
-    <script>
-        document.addEventListener('DOMContentLoaded', async function() {
-            if (window.AuthModule) {
-                const auth = new window.AuthModule();
-                const user = await auth.checkLogin();
-                if (!user || auth.currentProfile.role !== 'courier') {
-                    window.location.href = '/auth/login.html';
-                    return;
-                }
-                // TODO: Charger les livraisons actives depuis l'API
-                const deliveries = [
-                    { id: 1, title: 'Colis #12345', status: 'En cours', details: 'Paris → Lyon, 2kg, Client: Alice' },
-                    { id: 2, title: 'Colis #12344', status: 'En cours', details: 'Paris → Marseille, 1.5kg, Client: Bob' }
-                ];
-                const list = document.getElementById('activeList');
-                list.innerHTML = deliveries.map(item => `
-                    <div class="active-item">
-                        <div class="active-item-header">
-                            <span class="active-item-title">${item.title}</span>
-                            <span class="active-item-status">${item.status}</span>
-                        </div>
-                        <div class="active-item-details">${item.details}</div>
-                        <button class="btn btn-primary btn-complete btn-sm"><i class="fas fa-check"></i> Marquer comme livrée</button>
-                    </div>
-                `).join('');
-            }
-        });
-    </script>
-    <script>
-        // Remplace par l'ID réel de la livraison en cours (ex: via l'URL ou une variable JS)
-        const livraisonId = 1;
-        const supabaseClient = window.supabase || supabase;
-
-        async function updateLivreurPosition(lat, lng) {
-            const { error } = await supabaseClient
-                .from('livraisons')
-                .update({ position_livreur: { latitude: lat, longitude: lng } })
-                .eq('id', livraisonId);
-            if (error) {
-                console.error('Erreur MAJ position livreur:', error);
-            }
-        }
-
-        if (navigator.geolocation) {
-            navigator.geolocation.watchPosition(function(pos) {
-                updateLivreurPosition(pos.coords.latitude, pos.coords.longitude);
-            }, function(err) {
-                console.error('Erreur géolocalisation livreur:', err);
-            }, {
-                enableHighAccuracy: true,
-                maximumAge: 10000,
-                timeout: 10000
-            });
-        } else {
-            alert('La géolocalisation n'est pas supportée sur cet appareil.');
-        }
-    </script>
+    <footer style="text-align:center;margin:2rem 0 1rem 0;color:#888;font-size:0.97rem;">&copy; 2025 LivraisonP2P. Tous droits réservés.</footer>
 </body>
 </html> 

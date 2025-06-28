@@ -78,38 +78,5 @@
     </main>
     <div id="toastContainer"></div>
     <footer style="text-align:center;margin:2rem 0 1rem 0;color:#888;font-size:0.97rem;">&copy; 2025 LivraisonP2P. Tous droits réservés.</footer>
-    <script src="/js/components/toast.js"></script>
-    <script src="/js/modules/auth.js"></script>
-    <script>
-        document.addEventListener('DOMContentLoaded', async function() {
-            if (window.AuthModule) {
-                const auth = new window.AuthModule();
-                const user = await auth.checkLogin();
-                if (!user || auth.currentProfile.role !== 'admin') {
-                    window.location.href = '/auth/login.html';
-                    return;
-                }
-                // TODO: Charger les utilisateurs depuis l'API
-                const users = [
-                    { id: 1, nom: 'Alice Martin', email: 'alice@email.com', role: 'client', statut: 'actif' },
-                    { id: 2, nom: 'Bob Dupuis', email: 'bob@email.com', role: 'courier', statut: 'suspendu' },
-                    { id: 3, nom: 'Sarah Admin', email: 'sarah@email.com', role: 'admin', statut: 'actif' }
-                ];
-                const tbody = document.getElementById('usersTable').querySelector('tbody');
-                tbody.innerHTML = users.map(user => `
-                    <tr>
-                        <td>${user.nom}</td>
-                        <td>${user.email}</td>
-                        <td>${user.role}</td>
-                        <td>${user.statut}</td>
-                        <td>
-                            <button class="btn btn-primary btn-action btn-sm"><i class="fas fa-edit"></i></button>
-                            <button class="btn btn-danger btn-action btn-sm"><i class="fas fa-trash"></i></button>
-                        </td>
-                    </tr>
-                `).join('');
-            }
-        });
-    </script>
 </body>
 </html> 

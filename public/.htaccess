@@ -37,15 +37,15 @@ Header always set Strict-Transport-Security "max-age=31536000; includeSubDomains
     ExpiresByType image/svg+xml "access plus 1 month"
 </IfModule>
 
-# Règles de réécriture pour l'API
-RewriteCond %{REQUEST_FILENAME} !-f
-RewriteCond %{REQUEST_FILENAME} !-d
-
-# Redirection vers l'API
-RewriteRule ^api/(.*)$ ../api/index.php [QSA,L]
+# Règles de réécriture pour l'API - CORRECTION
+# Redirection vers l'API pour tous les endpoints commençant par /auth, /deliveries, /qr, /tracking, /notifications, /payments, /admin
+RewriteRule ^(auth|deliveries|qr|tracking|notifications|payments|admin)(/.*)?$ ../api/index.php [QSA,L]
 
 # Redirection vers le health check
 RewriteRule ^health$ ../api/health.php [QSA,L]
+
+# Redirection vers le test simple
+RewriteRule ^test-simple$ ../api/test-simple.php [QSA,L]
 
 # Redirection vers les fichiers statiques s'ils existent
 RewriteCond %{REQUEST_FILENAME} -f

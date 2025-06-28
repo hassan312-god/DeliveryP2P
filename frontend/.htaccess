@@ -1,7 +1,5 @@
 # Configuration Apache pour LivraisonP2P Frontend
-# Gestion des routes et redirections API
-
-RewriteEngine On
+# Optimisations et headers de sécurité
 
 # Headers de sécurité (avec vérification de module)
 <IfModule mod_headers.c>
@@ -37,19 +35,8 @@ RewriteEngine On
     ExpiresByType image/svg+xml "access plus 1 month"
 </IfModule>
 
-# Redirection des requêtes API vers le backend
-RewriteCond %{REQUEST_URI} ^/api/
-RewriteRule ^api/(.*)$ ../api/index.php [QSA,L]
-
-# Redirection du health check
-RewriteCond %{REQUEST_URI} ^/health$
-RewriteRule ^health$ ../api/health.php [QSA,L]
-
-# Redirection du test de connexion
-RewriteCond %{REQUEST_URI} ^/test-connection$
-RewriteRule ^test-connection$ ../api/test-connection.php [QSA,L]
-
 # Redirection vers les fichiers statiques s'ils existent
+RewriteEngine On
 RewriteCond %{REQUEST_FILENAME} -f
 RewriteRule ^(.*)$ $1 [L]
 
@@ -57,22 +44,6 @@ RewriteRule ^(.*)$ $1 [L]
 RewriteCond %{REQUEST_FILENAME} !-f
 RewriteCond %{REQUEST_FILENAME} !-d
 RewriteRule ^(.*)$ index.html [QSA,L]
-
-# Protection des fichiers sensibles
-<Files "*.env">
-    Order allow,deny
-    Deny from all
-</Files>
-
-<Files "*.log">
-    Order allow,deny
-    Deny from all
-</Files>
-
-<Files "composer.*">
-    Order allow,deny
-    Deny from all
-</Files>
 
 # Configuration PHP (avec vérification)
 <IfModule mod_php.c>

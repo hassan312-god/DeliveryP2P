@@ -23,9 +23,6 @@ COPY --from=composer:latest /usr/bin/composer /usr/bin/composer
 # Configuration Apache - Activation des modules nécessaires
 RUN a2enmod rewrite && a2enmod headers && a2enmod expires && a2enmod deflate
 
-# Configuration du DocumentRoot pour servir depuis frontend/
-RUN echo "DocumentRoot /var/www/html/frontend" > /etc/apache2/sites-available/000-default.conf
-
 # Définition du répertoire de travail
 WORKDIR /var/www/html
 
@@ -41,14 +38,23 @@ RUN echo "memory_limit = 256M" >> /usr/local/etc/php/conf.d/custom.ini \
     && echo "display_errors = Off" >> /usr/local/etc/php/conf.d/custom.ini \
     && echo "log_errors = On" >> /usr/local/etc/php/conf.d/custom.ini
 
-# Configuration Apache pour les routes API
-RUN echo '<Directory /var/www/html>' >> /etc/apache2/sites-available/000-default.conf \
-    && echo '    RewriteEngine On' >> /etc/apache2/sites-available/000-default.conf \
-    && echo '    RewriteCond %{REQUEST_URI} ^/api/' >> /etc/apache2/sites-available/000-default.conf \
-    && echo '    RewriteRule ^api/(.*)$ /api/index.php [QSA,L]' >> /etc/apache2/sites-available/000-default.conf \
-    && echo '    RewriteCond %{REQUEST_URI} ^/health$' >> /etc/apache2/sites-available/000-default.conf \
-    && echo '    RewriteRule ^health$ /api/health.php [QSA,L]' >> /etc/apache2/sites-available/000-default.conf \
-    && echo '</Directory>' >> /etc/apache2/sites-available/000-default.conf
+# Configuration Apache complète
+RUN echo '<VirtualHost *:80>' > /etc/apache2/sites-available/000-default.conf \
+    && echo '    DocumentRoot /var/www/html/frontend' >> /etc/apache2/sites-available/000-default.conf \
+    && echo '    ServerAdmin webmaster@localhost' >> /etc/apache2/sites-available/000-default.conf \
+    && echo '    ErrorLog ${APACHE_LOG_DIR}/error.log' >> /etc/apache2/sites-available/000-default.conf \
+    && echo '    CustomLog ${APACHE_LOG_DIR}/access.log combined' >> /etc/apache2/sites-available/000-default.conf \
+    && echo '    <Directory /var/www/html/frontend>' >> /etc/apache2/sites-available/000-default.conf \
+    && echo '        Options Indexes FollowSymLinks' >> /etc/apache2/sites-available/000-default.conf \
+    && echo '        AllowOverride All' >> /etc/apache2/sites-available/000-default.conf \
+    && echo '        Require all granted' >> /etc/apache2/sites-available/000-default.conf \
+    && echo '    </Directory>' >> /etc/apache2/sites-available/000-default.conf \
+    && echo '    <Directory /var/www/html/api>' >> /etc/apache2/sites-available/000-default.conf \
+    && echo '        Options Indexes FollowSymLinks' >> /etc/apache2/sites-available/000-default.conf \
+    && echo '        AllowOverride All' >> /etc/apache2/sites-available/000-default.conf \
+    && echo '        Require all granted' >> /etc/apache2/sites-available/000-default.conf \
+    && echo '    </Directory>' >> /etc/apache2/sites-available/000-default.conf \
+    && echo '</VirtualHost>' >> /etc/apache2/sites-available/000-default.conf
 
 # Rendre le script de démarrage exécutable
 RUN chmod +x /var/www/html/start.sh

@@ -6,7 +6,7 @@ class HomeController
 {
     public function index()
     {
-        // Afficher la page d'accueil
-        include VIEWS_PATH . 'home.php';
+        $pageTitle = 'Accueil';
+        include __DIR__ . '/../views/home.php';
     }
 } 

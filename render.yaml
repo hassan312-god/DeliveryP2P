@@ -1,4 +1,19 @@
 services:
+  # Service principal (Frontend + API avec Docker)
+  - type: web
+    name: deliveryp2p
+    env: docker
+    dockerfilePath: ./Dockerfile
+    envVars:
+      - key: APP_ENV
+        value: production
+      - key: SUPABASE_URL
+        sync: false
+      - key: SUPABASE_ANON_KEY
+        sync: false
+      - key: SUPABASE_SERVICE_ROLE_KEY
+        sync: false
+
   # Service Frontend
   - type: web
     name: deliveryp2p-frontend

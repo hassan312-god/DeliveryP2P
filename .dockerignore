@@ -1,0 +1,11 @@
+.git
+.gitignore
+README.md
+node_modules
+*.log
+.env
+.DS_Store
+migrate-to-render.sh
+update-urls.sh
+deploy-to-render.sh
+sync-supabase.sh

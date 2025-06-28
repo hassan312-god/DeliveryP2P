@@ -1,322 +1,183 @@
-# LivraisonP2P - Application de Livraison Peer-to-Peer
+# Supabase CLI
 
-Une application web moderne de livraison peer-to-peer construite avec HTML, CSS (Tailwind), JavaScript et Supabase.
+[![Coverage Status](https://coveralls.io/repos/github/supabase/cli/badge.svg?branch=main)](https://coveralls.io/github/supabase/cli?branch=main) [![Bitbucket Pipelines](https://img.shields.io/bitbucket/pipelines/supabase-cli/setup-cli/master?style=flat-square&label=Bitbucket%20Canary)](https://bitbucket.org/supabase-cli/setup-cli/pipelines) [![Gitlab Pipeline Status](https://img.shields.io/gitlab/pipeline-status/sweatybridge%2Fsetup-cli?label=Gitlab%20Canary)
+](https://gitlab.com/sweatybridge/setup-cli/-/pipelines)
 
-## 🚀 Fonctionnalités
+[Supabase](https://supabase.io) is an open source Firebase alternative. We're building the features of Firebase using enterprise-grade open source tools.
 
-### 🔐 Authentification
-- Inscription et connexion sécurisées
-- Authentification sociale (Google, Facebook)
-- Gestion des profils utilisateurs
-- Rôles utilisateur (Client, Livreur, Admin)
+This repository contains all the functionality for Supabase CLI.
 
-### 📦 Livraisons
-- Création de demandes de livraison
-- Suivi en temps réel
-- Géolocalisation et calcul de prix automatique
-- Système de notation et avis
-- Notifications push
+- [x] Running Supabase locally
+- [x] Managing database migrations
+- [x] Creating and deploying Supabase Functions
+- [x] Generating types directly from your database schema
+- [x] Making authenticated HTTP requests to [Management API](https://supabase.com/docs/reference/api/introduction)
 
-### 💰 Paiements
-- Intégration Mobile Money
-- Paiements par carte bancaire
-- Paiements en espèces
-- Historique des transactions
+## Getting started
 
-### 💬 Communication
-- Chat en temps réel
-- Appels vocaux
-- Notifications push
-- Messages avec images et localisation
+### Install the CLI
 
-### 📱 QR Codes (Nouveau!)
-- **Génération de QR codes** pour :
-  - Livraisons (suivi et identification)
-  - Profils utilisateurs (partage de contact)
-  - Paiements (transferts rapides)
-  - Localisations (partage de position)
-  - Contenu personnalisé
-- **Scanner de QR codes** avec caméra
-- **Historique et gestion** des QR codes
-- **Partage et téléchargement** des QR codes
-- **Favoris et organisation**
+Available via [NPM](https://www.npmjs.com) as dev dependency. To install:
 
-### 📊 Tableau de bord
-- Statistiques en temps réel
-- Graphiques et analyses
-- Gestion des utilisateurs
-- Rapports de performance
-
-## 🛠️ Technologies
-
-- **Frontend**: HTML5, CSS3 (Tailwind CSS), JavaScript ES6+
-- **Backend**: Supabase (PostgreSQL, Auth, Real-time)
-- **QR Codes**: QRCode.js, HTML5-QRCode
-- **Maps**: Google Maps API
-- **Paiements**: Intégration Mobile Money
-- **Notifications**: Push API, WebSockets
-
-## 📁 Structure du Projet
-
-```
-static-demo/
-├── auth/                    # Pages d'authentification
-├── client/                  # Interface client
-├── courier/                 # Interface livreur
-├── admin/                   # Interface administrateur
-├── assets/                  # Images et icônes
-├── css/                     # Styles CSS
-├── js/                      # JavaScript
-│   ├── components/          # Composants réutilisables
-│   ├── modules/             # Modules fonctionnels
-│   └── services/            # Services API
-├── database/                # Schémas et fonctions SQL
-├── qrcode.html             # Page QR codes
-├── chat.html               # Chat en temps réel
-├── call.html               # Appels vocaux
-└── index.html              # Page d'accueil
-```
-
-## 🚀 Installation
-
-### Prérequis
-- Node.js (optionnel pour le développement)
-- Compte Supabase
-- Navigateur moderne avec support WebRTC
-
-### Configuration
-
-1. **Cloner le repository**
 ```bash
-git clone <repository-url>
-cd static-demo
+npm i supabase --save-dev
 ```
 
-2. **Configurer Supabase**
-- Créer un projet Supabase
-- Copier l'URL et la clé anon dans `config.js`
-- Exécuter les scripts SQL dans l'ordre :
-  ```sql
-  -- 1. Schéma de base
-  \i database/schema.sql
-  
-  -- 2. Fonctions
-  \i database/functions.sql
-  
-  -- 3. Triggers
-  \i database/triggers.sql
-  
-  -- 4. Vues
-  \i database/views.sql
-  
-  -- 5. Sécurité
-  \i database/security.sql
+To install the beta release channel:
+
+```bash
+npm i supabase@beta --save-dev
+```
+
+When installing with yarn 4, you need to disable experimental fetch with the following nodejs config.
+
+```
+NODE_OPTIONS=--no-experimental-fetch yarn add supabase
+```
+
+> **Note**
+For Bun versions below v1.0.17, you must add `supabase` as a [trusted dependency](https://bun.sh/guides/install/trusted) before running `bun add -D supabase`.
+
+<details>
+  <summary><b>macOS</b></summary>
+
+  Available via [Homebrew](https://brew.sh). To install:
+
+  ```sh
+  brew install supabase/tap/supabase
   ```
 
-3. **Démarrer l'application**
+  To install the beta release channel:
+  
+  ```sh
+  brew install supabase/tap/supabase-beta
+  brew link --overwrite supabase-beta
+  ```
+  
+  To upgrade:
+
+  ```sh
+  brew upgrade supabase
+  ```
+</details>
+
+<details>
+  <summary><b>Windows</b></summary>
+
+  Available via [Scoop](https://scoop.sh). To install:
+
+  ```powershell
+  scoop bucket add supabase https://github.com/supabase/scoop-bucket.git
+  scoop install supabase
+  ```
+
+  To upgrade:
+
+  ```powershell
+  scoop update supabase
+  ```
+</details>
+
+<details>
+  <summary><b>Linux</b></summary>
+
+  Available via [Homebrew](https://brew.sh) and Linux packages.
+
+  #### via Homebrew
+
+  To install:
+
+  ```sh
+  brew install supabase/tap/supabase
+  ```
+
+  To upgrade:
+
+  ```sh
+  brew upgrade supabase
+  ```
+
+  #### via Linux packages
+
+  Linux packages are provided in [Releases](https://github.com/supabase/cli/releases). To install, download the `.apk`/`.deb`/`.rpm`/`.pkg.tar.zst` file depending on your package manager and run the respective commands.
+
+  ```sh
+  sudo apk add --allow-untrusted <...>.apk
+  ```
+
+  ```sh
+  sudo dpkg -i <...>.deb
+  ```
+
+  ```sh
+  sudo rpm -i <...>.rpm
+  ```
+
+  ```sh
+  sudo pacman -U <...>.pkg.tar.zst
+  ```
+</details>
+
+<details>
+  <summary><b>Other Platforms</b></summary>
+
+  You can also install the CLI via [go modules](https://go.dev/ref/mod#go-install) without the help of package managers.
+
+  ```sh
+  go install github.com/supabase/cli@latest
+  ```
+
+  Add a symlink to the binary in `$PATH` for easier access:
+
+  ```sh
+  ln -s "$(go env GOPATH)/bin/cli" /usr/bin/supabase
+  ```
+
+  This works on other non-standard Linux distros.
+</details>
+
+<details>
+  <summary><b>Community Maintained Packages</b></summary>
+
+  Available via [pkgx](https://pkgx.sh/). Package script [here](https://github.com/pkgxdev/pantry/blob/main/projects/supabase.com/cli/package.yml).
+  To install in your working directory:
+
+  ```bash
+  pkgx install supabase
+  ```
+
+  Available via [Nixpkgs](https://nixos.org/). Package script [here](https://github.com/NixOS/nixpkgs/blob/master/pkgs/development/tools/supabase-cli/default.nix).
+</details>
+
+### Run the CLI
+
 ```bash
-# Avec un serveur local (recommandé)
-python -m http.server 8000
-# ou
-npx serve .
-
-# Ouvrir http://localhost:8000
+supabase bootstrap
 ```
 
-## 📱 Fonctionnalités QR Code
+Or using npx:
 
-### Génération de QR Codes
-
-L'application permet de générer différents types de QR codes :
-
-#### 🚚 QR Code de Livraison
-- Contient l'ID de livraison et les adresses
-- Permet le suivi rapide d'une livraison
-- Redirige vers la page de suivi
-
-#### 👤 QR Code Utilisateur
-- Contient les informations du profil
-- Permet de partager facilement son contact
-- Redirige vers le chat avec l'utilisateur
-
-#### 💳 QR Code de Paiement
-- Contient le montant et la description
-- Permet des transferts rapides
-- Redirige vers la page de paiement
-
-#### 📍 QR Code de Localisation
-- Contient les coordonnées GPS
-- Permet de partager sa position
-- Ouvre Google Maps
-
-#### ✏️ QR Code Personnalisé
-- Contenu libre défini par l'utilisateur
-- Texte, URL, ou données JSON
-- Affichage dans un modal
-
-### Scanner de QR Codes
-
-- **Caméra en temps réel** pour scanner les QR codes
-- **Changement de caméra** (avant/arrière)
-- **Traitement automatique** selon le type de QR code
-- **Interface intuitive** avec guide visuel
-
-### Gestion des QR Codes
-
-- **Historique complet** des QR codes générés
-- **Filtres par type** et date
-- **Recherche** dans les titres et descriptions
-- **Favoris** pour un accès rapide
-- **Export** des données
-- **Nettoyage automatique** des anciens QR codes
-
-## 🔧 Configuration Avancée
-
-### Variables d'environnement
-```javascript
-// config.js
-window.AppConfig = {
-    supabase: {
-        url: 'VOTRE_URL_SUPABASE',
-        anonKey: 'VOTRE_CLE_ANON'
-    },
-    qrCodes: {
-        generation: {
-            width: 256,
-            height: 256,
-            margin: 2,
-            color: { dark: '#000000', light: '#FFFFFF' }
-        },
-        scanner: {
-            fps: 10,
-            qrbox: { width: 250, height: 250 }
-        }
-    }
-};
-```
-
-### Permissions utilisateur
-```sql
--- Ajouter les permissions QR code aux rôles
-UPDATE profiles SET permissions = array_append(permissions, 'generate_qr_codes')
-WHERE role IN ('client', 'livreur');
-
-UPDATE profiles SET permissions = array_append(permissions, 'manage_qr_codes')
-WHERE role = 'admin';
-```
-
-## 📊 Base de Données
-
-### Table QR Codes
-```sql
-CREATE TABLE qr_codes (
-    id UUID DEFAULT gen_random_uuid() PRIMARY KEY,
-    user_id UUID NOT NULL REFERENCES auth.users(id),
-    content TEXT NOT NULL,
-    qr_code_data TEXT NOT NULL,
-    type VARCHAR(50) NOT NULL DEFAULT 'custom',
-    title VARCHAR(255) NOT NULL,
-    description TEXT,
-    metadata JSONB,
-    is_favorite BOOLEAN DEFAULT FALSE,
-    scan_count INTEGER DEFAULT 0,
-    last_scanned_at TIMESTAMP WITH TIME ZONE,
-    created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
-    updated_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()
-);
-```
-
-### Fonctions principales
-- `create_qr_code()` - Créer un nouveau QR code
-- `increment_qr_scan_count()` - Incrémenter le compteur de scans
-- `get_qr_code_stats()` - Obtenir les statistiques
-- `search_qr_codes()` - Rechercher dans les QR codes
-- `export_user_qr_codes()` - Exporter les QR codes d'un utilisateur
-
-## 🔒 Sécurité
-
-- **Row Level Security (RLS)** activé sur toutes les tables
-- **Authentification** requise pour toutes les opérations
-- **Validation** des données côté client et serveur
-- **Audit trail** complet des modifications
-- **Nettoyage automatique** des données sensibles
-
-## 📈 Performance
-
-- **Index optimisés** pour les requêtes fréquentes
-- **Pagination** pour les grandes listes
-- **Cache** des QR codes générés
-- **Compression** des images
-- **Lazy loading** des composants
-
-## 🧪 Tests
-
-### Tests manuels
-1. **Génération QR codes** : Tester tous les types
-2. **Scanner QR codes** : Tester avec différents appareils
-3. **Partage** : Tester sur mobile et desktop
-4. **Historique** : Vérifier la persistance des données
-
-### Tests automatisés
 ```bash
-# Tests unitaires (à implémenter)
-npm test
-
-# Tests d'intégration
-npm run test:integration
+npx supabase bootstrap
 ```
 
-## 🚀 Déploiement
+The bootstrap command will guide you through the process of setting up a Supabase project using one of the [starter](https://github.com/supabase-community/supabase-samples/blob/main/samples.json) templates.
 
-### Production
-```bash
-# Build de production
-npm run build
+## Docs
 
-# Déploiement sur Vercel/Netlify
-vercel --prod
+Command & config reference can be found [here](https://supabase.com/docs/reference/cli/about).
+
+## Breaking changes
+
+We follow semantic versioning for changes that directly impact CLI commands, flags, and configurations.
+
+However, due to dependencies on other service images, we cannot guarantee that schema migrations, seed.sql, and generated types will always work for the same CLI major version. If you need such guarantees, we encourage you to pin a specific version of CLI in package.json.
+
+## Developing
+
+To run from source:
+
+```sh
+# Go >= 1.22
+go run . help
 ```
-
-### Variables d'environnement
-```bash
-SUPABASE_URL=votre_url_supabase
-SUPABASE_ANON_KEY=votre_cle_anon
-GOOGLE_MAPS_API_KEY=votre_cle_google_maps
-```
-
-## 🤝 Contribution
-
-1. Fork le projet
-2. Créer une branche feature (`git checkout -b feature/AmazingFeature`)
-3. Commit les changements (`git commit -m 'Add some AmazingFeature'`)
-4. Push vers la branche (`git push origin feature/AmazingFeature`)
-5. Ouvrir une Pull Request
-
-## 📄 Licence
-
-Ce projet est sous licence MIT. Voir le fichier `LICENSE` pour plus de détails.
-
-## 📞 Support
-
-- **Email**: support@livraisonp2p.com
-- **Documentation**: [Wiki du projet]
-- **Issues**: [GitHub Issues]
-
-## 🔄 Changelog
-
-### Version 1.1.0 (Actuelle)
-- ✨ Ajout du système de QR codes complet
-- 🔧 Amélioration de la sécurité
-- 📱 Support mobile amélioré
-- 🐛 Corrections de bugs
-
-### Version 1.0.0
-- 🎉 Version initiale
-- 🔐 Système d'authentification
-- 📦 Gestion des livraisons
-- 💰 Système de paiement
-- 💬 Chat en temps réel
-
----
-
-**LivraisonP2P** - Simplifiez vos livraisons avec la puissance du peer-to-peer ! 🚀 

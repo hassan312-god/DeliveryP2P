@@ -7,64 +7,198 @@ use DeliveryP2P\Utils\Logger;
 
 /**
  * Service d'authentification pour LivraisonP2P
- * Gestion des utilisateurs avec Supabase
+ * Gestion des utilisateurs avec Supabase Auth + table profiles
  */
 class AuthService
 {
     private Database $database;
     private Logger $logger;
+    private string $supabaseUrl;
+    private string $supabaseAnonKey;
+    private string $supabaseServiceKey;
 
     public function __construct()
     {
         $this->database = Database::getInstance();
         $this->logger = new Logger();
+        $this->supabaseUrl = $_ENV['SUPABASE_URL'] ?? '';
+        $this->supabaseAnonKey = $_ENV['SUPABASE_ANON_KEY'] ?? '';
+        $this->supabaseServiceKey = $_ENV['SUPABASE_SERVICE_KEY'] ?? '';
     }
 
     /**
-     * Création d'un nouvel utilisateur
+     * Création d'un utilisateur via Supabase Auth
      */
-    public function createUser(array $userData): ?int
+    public function createSupabaseUser(array $userData): array
     {
         try {
-            $this->logger->info('Création d\'un nouvel utilisateur', [
+            $this->logger->info('Création d\'un utilisateur via Supabase Auth', [
                 'email' => $userData['email']
             ]);
 
-            $response = $this->database->post('users', $userData);
+            $url = $this->supabaseUrl . '/auth/v1/signup';
             
-            if ($response['success'] && isset($response['data']['id'])) {
-                $this->logger->info('Utilisateur créé avec succès', [
-                    'user_id' => $response['data']['id']
+            $data = [
+                'email' => $userData['email'],
+                'password' => $userData['password'],
+                'email_confirm' => $userData['email_confirm'] ?? false
+            ];
+
+            $response = $this->makeHttpRequest($url, 'POST', $data, [
+                'apikey: ' . $this->supabaseAnonKey,
+                'Content-Type: application/json'
+            ]);
+
+            if ($response['http_code'] === 200 || $response['http_code'] === 201) {
+                $this->logger->info('Utilisateur Supabase Auth créé avec succès', [
+                    'user_id' => $response['data']['user']['id'] ?? 'unknown'
                 ]);
-                return $response['data']['id'];
+                return [
+                    'success' => true,
+                    'user' => $response['data']['user'],
+                    'session' => $response['data']['session'] ?? null
+                ];
             }
 
-            $this->logger->error('Échec de création de l\'utilisateur', [
-                'response' => $response
+            $this->logger->error('Échec de création utilisateur Supabase Auth', [
+                'http_code' => $response['http_code'],
+                'error' => $response['data'] ?? 'Unknown error'
             ]);
-            return null;
+
+            return [
+                'success' => false,
+                'error' => $response['data']['error_description'] ?? 'Erreur lors de la création du compte',
+                'http_code' => $response['http_code']
+            ];
 
         } catch (\Exception $e) {
-            $this->logger->error('Erreur lors de la création de l\'utilisateur', [
+            $this->logger->error('Erreur lors de la création utilisateur Supabase Auth', [
                 'error' => $e->getMessage()
             ]);
-            return null;
+            return [
+                'success' => false,
+                'error' => $e->getMessage()
+            ];
         }
     }
 
     /**
-     * Recherche d'un utilisateur par email
+     * Connexion d'un utilisateur via Supabase Auth
+     */
+    public function loginSupabaseUser(string $email, string $password): array
+    {
+        try {
+            $this->logger->info('Tentative de connexion Supabase Auth', [
+                'email' => $email
+            ]);
+
+            $url = $this->supabaseUrl . '/auth/v1/token?grant_type=password';
+            
+            $data = [
+                'email' => $email,
+                'password' => $password
+            ];
+
+            $response = $this->makeHttpRequest($url, 'POST', $data, [
+                'apikey: ' . $this->supabaseAnonKey,
+                'Content-Type: application/json'
+            ]);
+
+            if ($response['http_code'] === 200) {
+                $this->logger->info('Connexion Supabase Auth réussie', [
+                    'user_id' => $response['data']['user']['id'] ?? 'unknown'
+                ]);
+                return [
+                    'success' => true,
+                    'user' => $response['data']['user'],
+                    'access_token' => $response['data']['access_token'],
+                    'refresh_token' => $response['data']['refresh_token']
+                ];
+            }
+
+            $this->logger->error('Échec de connexion Supabase Auth', [
+                'http_code' => $response['http_code'],
+                'error' => $response['data'] ?? 'Unknown error'
+            ]);
+
+            return [
+                'success' => false,
+                'error' => $response['data']['error_description'] ?? 'Email ou mot de passe incorrect',
+                'http_code' => $response['http_code']
+            ];
+
+        } catch (\Exception $e) {
+            $this->logger->error('Erreur lors de la connexion Supabase Auth', [
+                'error' => $e->getMessage()
+            ]);
+            return [
+                'success' => false,
+                'error' => $e->getMessage()
+            ];
+        }
+    }
+
+    /**
+     * Création d'un profil dans la table profiles
+     */
+    public function createProfile(array $profileData): array
+    {
+        try {
+            $this->logger->info('Création d\'un profil utilisateur', [
+                'user_id' => $profileData['id']
+            ]);
+
+            $response = $this->database->post('profiles', $profileData);
+            
+            if ($response['success']) {
+                $this->logger->info('Profil utilisateur créé avec succès', [
+                    'user_id' => $profileData['id']
+                ]);
+                return [
+                    'success' => true,
+                    'profile' => $response['data'] ?? $profileData
+                ];
+            }
+
+            $this->logger->error('Échec de création du profil utilisateur', [
+                'response' => $response
+            ]);
+            return [
+                'success' => false,
+                'error' => $response['error'] ?? 'Erreur lors de la création du profil'
+            ];
+
+        } catch (\Exception $e) {
+            $this->logger->error('Erreur lors de la création du profil', [
+                'error' => $e->getMessage()
+            ]);
+            return [
+                'success' => false,
+                'error' => $e->getMessage()
+            ];
+        }
+    }
+
+    /**
+     * Recherche d'un utilisateur par email dans Supabase Auth
      */
     public function findUserByEmail(string $email): ?array
     {
         try {
-            $response = $this->database->get('users', [
-                'email' => 'eq.' . $email,
-                'select' => '*'
+            // Utilisation de l'API Admin de Supabase pour rechercher un utilisateur
+            $url = $this->supabaseUrl . '/auth/v1/admin/users';
+            
+            $response = $this->makeHttpRequest($url, 'GET', null, [
+                'apikey: ' . $this->supabaseServiceKey,
+                'Authorization: Bearer ' . $this->supabaseServiceKey
             ]);
 
-            if ($response['success'] && !empty($response['data'])) {
-                return $response['data'][0];
+            if ($response['http_code'] === 200 && isset($response['data'])) {
+                foreach ($response['data'] as $user) {
+                    if ($user['email'] === $email) {
+                        return $user;
+                    }
+                }
             }
 
             return null;
@@ -79,12 +213,12 @@ class AuthService
     }
 
     /**
-     * Recherche d'un utilisateur par ID
+     * Recherche d'un profil par ID
      */
-    public function findUserById(int $userId): ?array
+    public function findProfileById(string $userId): ?array
     {
         try {
-            $response = $this->database->get("users?id=eq.$userId&select=*");
+            $response = $this->database->get("profiles?id=eq.$userId&select=*");
 
             if ($response['success'] && !empty($response['data'])) {
                 return $response['data'][0];
@@ -93,7 +227,7 @@ class AuthService
             return null;
 
         } catch (\Exception $e) {
-            $this->logger->error('Erreur lors de la recherche d\'utilisateur par ID', [
+            $this->logger->error('Erreur lors de la recherche de profil par ID', [
                 'error' => $e->getMessage(),
                 'user_id' => $userId
             ]);
@@ -102,32 +236,66 @@ class AuthService
     }
 
     /**
-     * Mise à jour d'un utilisateur
+     * Mise à jour d'un profil
      */
-    public function updateUser(int $userId, array $updateData): bool
+    public function updateProfile(string $userId, array $updateData): bool
     {
         try {
-            $this->logger->info('Mise à jour de l\'utilisateur', [
+            $this->logger->info('Mise à jour du profil utilisateur', [
                 'user_id' => $userId,
                 'fields' => array_keys($updateData)
             ]);
 
-            $response = $this->database->patch("users?id=eq.$userId", $updateData);
+            $response = $this->database->patch("profiles?id=eq.$userId", $updateData);
             
             if ($response['success']) {
-                $this->logger->info('Utilisateur mis à jour avec succès', [
+                $this->logger->info('Profil utilisateur mis à jour avec succès', [
                     'user_id' => $userId
                 ]);
                 return true;
             }
 
-            $this->logger->error('Échec de mise à jour de l\'utilisateur', [
+            $this->logger->error('Échec de mise à jour du profil utilisateur', [
                 'response' => $response
             ]);
             return false;
 
         } catch (\Exception $e) {
-            $this->logger->error('Erreur lors de la mise à jour de l\'utilisateur', [
+            $this->logger->error('Erreur lors de la mise à jour du profil', [
+                'error' => $e->getMessage(),
+                'user_id' => $userId
+            ]);
+            return false;
+        }
+    }
+
+    /**
+     * Suppression d'un utilisateur Supabase Auth
+     */
+    public function deleteSupabaseUser(string $userId): bool
+    {
+        try {
+            $url = $this->supabaseUrl . '/auth/v1/admin/users/' . $userId;
+            
+            $response = $this->makeHttpRequest($url, 'DELETE', null, [
+                'apikey: ' . $this->supabaseServiceKey,
+                'Authorization: Bearer ' . $this->supabaseServiceKey
+            ]);
+
+            if ($response['http_code'] === 200) {
+                $this->logger->info('Utilisateur Supabase Auth supprimé', [
+                    'user_id' => $userId
+                ]);
+                return true;
+            }
+
+            $this->logger->error('Échec de suppression utilisateur Supabase Auth', [
+                'http_code' => $response['http_code']
+            ]);
+            return false;
+
+        } catch (\Exception $e) {
+            $this->logger->error('Erreur lors de la suppression utilisateur Supabase Auth', [
                 'error' => $e->getMessage(),
                 'user_id' => $userId
             ]);
@@ -141,35 +309,27 @@ class AuthService
     public function verifyEmail(string $token): bool
     {
         try {
-            // Recherche du token dans la base de données
-            $response = $this->database->get('email_verifications', [
-                'token' => 'eq.' . $token,
-                'select' => 'user_id,expires_at'
-            ]);
-
-            if (!$response['success'] || empty($response['data'])) {
-                return false;
-            }
-
-            $verification = $response['data'][0];
+            $url = $this->supabaseUrl . '/auth/v1/verify';
             
-            // Vérification de l'expiration
-            if (strtotime($verification['expires_at']) < time()) {
-                return false;
-            }
-
-            // Activation de l'utilisateur
-            $updateData = [
-                'status' => 'active',
-                'email_verified_at' => date('c'),
-                'updated_at' => date('c')
+            $data = [
+                'token_hash' => $token,
+                'type' => 'signup'
             ];
 
-            $updateResponse = $this->database->patch("users?id=eq.{$verification['user_id']}", $updateData);
-            
-            if ($updateResponse['success']) {
-                // Suppression du token de vérification
-                $this->database->delete("email_verifications?token=eq.$token");
+            $response = $this->makeHttpRequest($url, 'POST', $data, [
+                'apikey: ' . $this->supabaseAnonKey,
+                'Content-Type: application/json'
+            ]);
+
+            if ($response['http_code'] === 200) {
+                // Mettre à jour le statut du profil
+                $user = $response['data']['user'] ?? null;
+                if ($user) {
+                    $this->updateProfile($user['id'], [
+                        'status' => 'active',
+                        'email_verified_at' => date('c')
+                    ]);
+                }
                 return true;
             }
 
@@ -189,36 +349,18 @@ class AuthService
     public function sendPasswordReset(string $email): bool
     {
         try {
-            // Recherche de l'utilisateur
-            $user = $this->findUserByEmail($email);
-            if (!$user) {
-                return false; // On ne révèle pas si l'email existe
-            }
-
-            // Génération d'un token de réinitialisation
-            $token = bin2hex(random_bytes(32));
-            $expiresAt = date('c', strtotime('+1 hour'));
-
-            $resetData = [
-                'user_id' => $user['id'],
-                'token' => $token,
-                'expires_at' => $expiresAt,
-                'created_at' => date('c')
+            $url = $this->supabaseUrl . '/auth/v1/recover';
+            
+            $data = [
+                'email' => $email
             ];
 
-            $response = $this->database->post('password_resets', $resetData);
-            
-            if ($response['success']) {
-                // Ici, vous pourriez envoyer un email avec le token
-                // Pour le moment, on log juste le token
-                $this->logger->info('Token de réinitialisation généré', [
-                    'user_id' => $user['id'],
-                    'token' => $token
-                ]);
-                return true;
-            }
+            $response = $this->makeHttpRequest($url, 'POST', $data, [
+                'apikey: ' . $this->supabaseAnonKey,
+                'Content-Type: application/json'
+            ]);
 
-            return false;
+            return $response['http_code'] === 200;
 
         } catch (\Exception $e) {
             $this->logger->error('Erreur lors de l\'envoi de réinitialisation', [
@@ -235,38 +377,19 @@ class AuthService
     public function resetPassword(string $token, string $newPassword): bool
     {
         try {
-            // Recherche du token
-            $response = $this->database->get('password_resets', [
-                'token' => 'eq.' . $token,
-                'select' => 'user_id,expires_at'
-            ]);
-
-            if (!$response['success'] || empty($response['data'])) {
-                return false;
-            }
-
-            $reset = $response['data'][0];
+            $url = $this->supabaseUrl . '/auth/v1/user';
             
-            // Vérification de l'expiration
-            if (strtotime($reset['expires_at']) < time()) {
-                return false;
-            }
-
-            // Mise à jour du mot de passe
-            $updateData = [
-                'password' => password_hash($newPassword, PASSWORD_DEFAULT),
-                'updated_at' => date('c')
+            $data = [
+                'password' => $newPassword
             ];
 
-            $updateResponse = $this->database->patch("users?id=eq.{$reset['user_id']}", $updateData);
-            
-            if ($updateResponse['success']) {
-                // Suppression du token de réinitialisation
-                $this->database->delete("password_resets?token=eq.$token");
-                return true;
-            }
+            $response = $this->makeHttpRequest($url, 'PUT', $data, [
+                'apikey: ' . $this->supabaseAnonKey,
+                'Authorization: Bearer ' . $token,
+                'Content-Type: application/json'
+            ]);
 
-            return false;
+            return $response['http_code'] === 200;
 
         } catch (\Exception $e) {
             $this->logger->error('Erreur lors de la réinitialisation du mot de passe', [
@@ -285,13 +408,13 @@ class AuthService
     }
 
     /**
-     * Récupération de tous les utilisateurs (pour l'admin)
+     * Récupération de tous les profils (pour l'admin)
      */
-    public function getAllUsers(int $limit = 50, int $offset = 0): array
+    public function getAllProfiles(int $limit = 50, int $offset = 0): array
     {
         try {
-            $response = $this->database->get('users', [
-                'select' => 'id,email,name,role,status,created_at',
+            $response = $this->database->get('profiles', [
+                'select' => 'id,name,email,role,status,created_at',
                 'order' => 'created_at.desc',
                 'limit' => $limit,
                 'offset' => $offset
@@ -304,7 +427,7 @@ class AuthService
             return [];
 
         } catch (\Exception $e) {
-            $this->logger->error('Erreur lors de la récupération des utilisateurs', [
+            $this->logger->error('Erreur lors de la récupération des profils', [
                 'error' => $e->getMessage()
             ]);
             return [];
@@ -312,15 +435,18 @@ class AuthService
     }
 
     /**
-     * Suppression d'un utilisateur (pour l'admin)
+     * Suppression d'un profil (pour l'admin)
      */
-    public function deleteUser(int $userId): bool
+    public function deleteProfile(string $userId): bool
     {
         try {
-            $response = $this->database->delete("users?id=eq.$userId");
+            $response = $this->database->delete("profiles?id=eq.$userId");
             
             if ($response['success']) {
-                $this->logger->info('Utilisateur supprimé', [
+                // Supprimer aussi l'utilisateur Supabase Auth
+                $this->deleteSupabaseUser($userId);
+                
+                $this->logger->info('Profil supprimé', [
                     'user_id' => $userId
                 ]);
                 return true;
@@ -329,11 +455,57 @@ class AuthService
             return false;
 
         } catch (\Exception $e) {
-            $this->logger->error('Erreur lors de la suppression de l\'utilisateur', [
+            $this->logger->error('Erreur lors de la suppression du profil', [
                 'error' => $e->getMessage(),
                 'user_id' => $userId
             ]);
             return false;
         }
+    }
+
+    /**
+     * Effectue une requête HTTP vers l'API Supabase
+     */
+    private function makeHttpRequest(string $url, string $method, ?array $data = null, array $headers = []): array
+    {
+        $ch = curl_init();
+        
+        curl_setopt($ch, CURLOPT_URL, $url);
+        curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
+        curl_setopt($ch, CURLOPT_HTTPHEADER, $headers);
+        curl_setopt($ch, CURLOPT_TIMEOUT, 30);
+        curl_setopt($ch, CURLOPT_SSL_VERIFYPEER, true);
+        
+        if ($method === 'POST') {
+            curl_setopt($ch, CURLOPT_POST, true);
+            if ($data) {
+                curl_setopt($ch, CURLOPT_POSTFIELDS, json_encode($data));
+            }
+        } elseif ($method === 'PUT') {
+            curl_setopt($ch, CURLOPT_CUSTOMREQUEST, 'PUT');
+            if ($data) {
+                curl_setopt($ch, CURLOPT_POSTFIELDS, json_encode($data));
+            }
+        } elseif ($method === 'DELETE') {
+            curl_setopt($ch, CURLOPT_CUSTOMREQUEST, 'DELETE');
+        }
+        
+        $response = curl_exec($ch);
+        $httpCode = curl_getinfo($ch, CURLINFO_HTTP_CODE);
+        $error = curl_error($ch);
+        
+        curl_close($ch);
+        
+        if ($error) {
+            throw new \Exception('Erreur cURL: ' . $error);
+        }
+        
+        $data = json_decode($response, true);
+        
+        return [
+            'http_code' => $httpCode,
+            'data' => $data,
+            'raw_response' => $response
+        ];
     }
 } 

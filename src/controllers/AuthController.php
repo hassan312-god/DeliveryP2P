@@ -12,6 +12,7 @@ use DeliveryP2P\Services\JWTService;
 /**
  * Contrôleur d'authentification pour LivraisonP2P
  * Gestion de l'inscription, connexion et gestion des profils utilisateurs
+ * Utilise Supabase Auth + table profiles
  */
 class AuthController
 {
@@ -29,12 +30,12 @@ class AuthController
     }
 
     /**
-     * Inscription d'un nouvel utilisateur
+     * Inscription d'un nouvel utilisateur via Supabase Auth + profiles
      */
     public function register(): array
     {
         try {
-            $this->logger->info('Tentative d\'inscription d\'un nouvel utilisateur');
+            $this->logger->info('Tentative d\'inscription d\'un nouvel utilisateur via Supabase Auth');
 
             // Récupération des données de la requête
             $input = json_decode(file_get_contents('php://input'), true);
@@ -71,50 +72,69 @@ class AuthController
                 throw new ApiException('Erreur de connexion à la base de données', 503);
             }
 
-            // Vérification si l'utilisateur existe déjà
+            // Vérification si l'utilisateur existe déjà dans Supabase Auth
             $existingUser = $this->authService->findUserByEmail($input['email']);
             if ($existingUser) {
                 throw new ApiException('Un utilisateur avec cet email existe déjà', 409);
             }
 
-            // Création de l'utilisateur
-            $userData = [
+            // 1. Création de l'utilisateur via Supabase Auth
+            $authData = [
                 'email' => $input['email'],
-                'password' => password_hash($input['password'], PASSWORD_DEFAULT),
+                'password' => $input['password'],
+                'email_confirm' => true // Auto-confirmation pour le test
+            ];
+
+            $authResponse = $this->authService->createSupabaseUser($authData);
+            
+            if (!$authResponse['success']) {
+                $this->logger->error('Échec de création utilisateur Supabase Auth', [
+                    'error' => $authResponse['error']
+                ]);
+                throw new ApiException('Erreur lors de la création du compte utilisateur', 500);
+            }
+
+            $authUserId = $authResponse['user']['id'];
+
+            // 2. Création du profil dans la table profiles
+            $profileData = [
+                'id' => $authUserId, // Utilise l'ID Supabase Auth comme clé primaire
                 'name' => $input['name'],
                 'phone' => $input['phone'],
-                'role' => 'client', // Rôle par défaut
-                'status' => 'pending', // Statut en attente de vérification
+                'role' => $input['role'] ?? 'client',
+                'status' => 'active', // Actif par défaut
                 'created_at' => date('c'),
                 'updated_at' => date('c')
             ];
 
-            $userId = $this->authService->createUser($userData);
+            $profileResponse = $this->authService->createProfile($profileData);
             
-            if (!$userId) {
-                throw new ApiException('Erreur lors de la création de l\'utilisateur', 500);
+            if (!$profileResponse['success']) {
+                // Si la création du profil échoue, supprimer l'utilisateur Auth
+                $this->authService->deleteSupabaseUser($authUserId);
+                throw new ApiException('Erreur lors de la création du profil utilisateur', 500);
             }
 
             // Génération du token JWT
             $token = $this->jwtService->generateToken([
-                'user_id' => $userId,
+                'user_id' => $authUserId,
                 'email' => $input['email'],
-                'role' => 'client'
+                'role' => $profileData['role']
             ]);
 
-            $this->logger->info('Inscription réussie', [
-                'user_id' => $userId,
+            $this->logger->info('Inscription réussie via Supabase Auth', [
+                'auth_user_id' => $authUserId,
                 'email' => $input['email']
             ]);
 
             return Response::success([
                 'message' => 'Inscription réussie',
                 'user' => [
-                    'id' => $userId,
+                    'id' => $authUserId,
                     'email' => $input['email'],
                     'name' => $input['name'],
-                    'role' => 'client',
-                    'status' => 'pending'
+                    'role' => $profileData['role'],
+                    'status' => $profileData['status']
                 ],
                 'token' => $token,
                 'supabase_connection' => [
@@ -139,12 +159,12 @@ class AuthController
     }
 
     /**
-     * Connexion d'un utilisateur
+     * Connexion d'un utilisateur via Supabase Auth
      */
     public function login(): array
     {
         try {
-            $this->logger->info('Tentative de connexion utilisateur');
+            $this->logger->info('Tentative de connexion utilisateur via Supabase Auth');
 
             $input = json_decode(file_get_contents('php://input'), true);
             
@@ -158,44 +178,50 @@ class AuthController
                 throw new ApiException('Erreur de connexion à la base de données', 503);
             }
 
-            // Recherche de l'utilisateur
-            $user = $this->authService->findUserByEmail($input['email']);
-            if (!$user) {
+            // Connexion via Supabase Auth
+            $loginResponse = $this->authService->loginSupabaseUser($input['email'], $input['password']);
+            
+            if (!$loginResponse['success']) {
                 throw new ApiException('Email ou mot de passe incorrect', 401);
             }
 
-            // Vérification du mot de passe
-            if (!password_verify($input['password'], $user['password'])) {
-                throw new ApiException('Email ou mot de passe incorrect', 401);
+            $authUser = $loginResponse['user'];
+            $accessToken = $loginResponse['access_token'];
+
+            // Récupération du profil utilisateur
+            $profile = $this->authService->findProfileById($authUser['id']);
+            if (!$profile) {
+                throw new ApiException('Profil utilisateur non trouvé', 404);
             }
 
             // Vérification du statut
-            if ($user['status'] !== 'active') {
+            if ($profile['status'] !== 'active') {
                 throw new ApiException('Compte non activé. Veuillez vérifier votre email.', 403);
             }
 
-            // Génération du token JWT
-            $token = $this->jwtService->generateToken([
-                'user_id' => $user['id'],
-                'email' => $user['email'],
-                'role' => $user['role']
+            // Génération du token JWT local (optionnel, car Supabase fournit déjà un token)
+            $jwtToken = $this->jwtService->generateToken([
+                'user_id' => $authUser['id'],
+                'email' => $authUser['email'],
+                'role' => $profile['role']
             ]);
 
-            $this->logger->info('Connexion réussie', [
-                'user_id' => $user['id'],
-                'email' => $user['email']
+            $this->logger->info('Connexion réussie via Supabase Auth', [
+                'auth_user_id' => $authUser['id'],
+                'email' => $authUser['email']
             ]);
 
             return Response::success([
                 'message' => 'Connexion réussie',
                 'user' => [
-                    'id' => $user['id'],
-                    'email' => $user['email'],
-                    'name' => $user['name'],
-                    'role' => $user['role'],
-                    'status' => $user['status']
+                    'id' => $authUser['id'],
+                    'email' => $authUser['email'],
+                    'name' => $profile['name'],
+                    'role' => $profile['role'],
+                    'status' => $profile['status']
                 ],
-                'token' => $token,
+                'token' => $jwtToken,
+                'supabase_token' => $accessToken, // Token Supabase pour les requêtes API
                 'supabase_connection' => [
                     'status' => 'connected',
                     'test_result' => $dbTest
@@ -223,17 +249,16 @@ class AuthController
     {
         try {
             $userId = $this->getCurrentUserId();
-            $user = $this->authService->findUserById($userId);
             
-            if (!$user) {
-                throw new ApiException('Utilisateur non trouvé', 404);
+            // Récupération du profil depuis la table profiles
+            $profile = $this->authService->findProfileById($userId);
+            
+            if (!$profile) {
+                throw new ApiException('Profil utilisateur non trouvé', 404);
             }
 
-            // Suppression du mot de passe des données retournées
-            unset($user['password']);
-
             return Response::success([
-                'user' => $user
+                'profile' => $profile
             ]);
 
         } catch (ApiException $e) {
@@ -274,7 +299,7 @@ class AuthController
 
             $updateData['updated_at'] = date('c');
             
-            $success = $this->authService->updateUser($userId, $updateData);
+            $success = $this->authService->updateProfile($userId, $updateData);
             
             if (!$success) {
                 throw new ApiException('Erreur lors de la mise à jour du profil', 500);
@@ -412,7 +437,7 @@ class AuthController
     /**
      * Récupération de l'ID utilisateur depuis le token JWT
      */
-    private function getCurrentUserId(): int
+    private function getCurrentUserId(): string
     {
         $token = $this->getBearerToken();
         if (!$token) {

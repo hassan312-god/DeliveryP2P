@@ -111,7 +111,7 @@ define('MEMORY_LIMIT', $_ENV['MEMORY_LIMIT'] ?? '256M');
 define('MAX_EXECUTION_TIME', (int) ($_ENV['MAX_EXECUTION_TIME'] ?? 30));
 
 // Configuration PHP
-define('PHP_VERSION', $_ENV['PHP_VERSION'] ?? '8.2');
+define('APP_PHP_VERSION', $_ENV['PHP_VERSION'] ?? '8.2');
 define('COMPOSER_MEMORY_LIMIT', $_ENV['COMPOSER_MEMORY_LIMIT'] ?? '-1');
 
 // Configuration de l'environnement

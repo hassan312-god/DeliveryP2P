@@ -1,0 +1,45 @@
+# Dockerfile simplifié pour Render
+# Version alternative plus compatible
+
+FROM php:8.2-apache
+
+# Installation des dépendances système
+RUN apt-get update && apt-get install -y \
+    git \
+    curl \
+    libpng-dev \
+    libonig-dev \
+    libxml2-dev \
+    zip \
+    unzip \
+    libzip-dev \
+    && docker-php-ext-install pdo_mysql mbstring exif pcntl bcmath gd zip \
+    && apt-get clean \
+    && rm -rf /var/lib/apt/lists/*
+
+# Installation de Composer
+COPY --from=composer:latest /usr/bin/composer /usr/bin/composer
+
+# Configuration Apache
+RUN a2enmod rewrite
+RUN echo "DocumentRoot /var/www/html/public" > /etc/apache2/sites-available/000-default.conf
+
+# Définition du répertoire de travail
+WORKDIR /var/www/html
+
+# Copie des fichiers de l'application
+COPY . /var/www/html/
+
+# Installation des dépendances PHP
+RUN composer install --optimize-autoloader --no-dev --no-interaction
+
+# Configuration des permissions
+RUN chown -R www-data:www-data /var/www/html \
+    && chmod -R 755 /var/www/html/storage \
+    && mkdir -p storage/{logs,cache,qr_codes,uploads}
+
+# Exposition du port
+EXPOSE 80
+
+# Commande de démarrage
+CMD ["apache2-foreground"] 

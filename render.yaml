@@ -18,60 +18,22 @@ services:
       - key: APP_URL
         value: "https://deliveryp2p-api.onrender.com"
       
-      # Configuration Supabase
+      # Configuration Supabase (à configurer manuellement)
       - key: SUPABASE_URL
         sync: false
       - key: SUPABASE_ANON_KEY
         sync: false
-      - key: SUPABASE_SERVICE_KEY
+      - key: SUPABASE_SERVICE_ROLE_KEY
         sync: false
       
-      # Configuration JWT et sécurité
+      # Configuration JWT et sécurité (à configurer manuellement)
       - key: JWT_SECRET
-        sync: false
-      - key: PASSWORD_SALT
         sync: false
       - key: ENCRYPTION_KEY
         sync: false
       - key: QR_CODE_SECRET
         sync: false
-      
-      # Configuration SMTP
-      - key: SMTP_HOST
-        sync: false
-      - key: SMTP_PORT
-        value: "587"
-      - key: SMTP_USERNAME
-        sync: false
-      - key: SMTP_PASSWORD
-        sync: false
-      - key: SMTP_FROM_EMAIL
-        sync: false
-      - key: SMTP_FROM_NAME
-        value: "LivraisonP2P"
-      
-      # Configuration des paiements
-      - key: STRIPE_SECRET_KEY
-        sync: false
-      - key: STRIPE_PUBLISHABLE_KEY
-        sync: false
-      - key: STRIPE_WEBHOOK_SECRET
-        sync: false
-      
-      # Configuration des notifications
-      - key: FIREBASE_SERVER_KEY
-        sync: false
-      - key: SENDGRID_API_KEY
-        sync: false
-      - key: TWILIO_ACCOUNT_SID
-        sync: false
-      - key: TWILIO_AUTH_TOKEN
-        sync: false
-      
-      # Configuration de géolocalisation
-      - key: GOOGLE_MAPS_API_KEY
-        sync: false
-      - key: MAPBOX_ACCESS_TOKEN
+      - key: PASSWORD_SALT
         sync: false
       
       # Configuration des logs
@@ -104,7 +66,7 @@ services:
       
       # Configuration des livraisons
       - key: DELIVERY_RADIUS_KM
-        value: "50"
+        value: "0.5"
       - key: DELIVERY_TIMEOUT_MINUTES
         value: "30"
       - key: MAX_DELIVERY_WEIGHT_KG
@@ -124,18 +86,6 @@ services:
       - key: SMS_NOTIFICATIONS_ENABLED
         value: "false"
       
-      # Configuration de la base de données
-      - key: DB_HOST
-        sync: false
-      - key: DB_PORT
-        value: "5432"
-      - key: DB_NAME
-        sync: false
-      - key: DB_USER
-        sync: false
-      - key: DB_PASSWORD
-        sync: false
-      
       # Configuration des timezones
       - key: TIMEZONE
         value: "Europe/Paris"
@@ -153,8 +103,6 @@ services:
         value: "8.2"
       - key: COMPOSER_MEMORY_LIMIT
         value: "-1"
-      - key: NODE_ENV
-        value: "production"
     autoDeploy: true
     branch: main
 

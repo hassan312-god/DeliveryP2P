@@ -5,7 +5,6 @@ FROM php:8.2-fpm-alpine
 
 # Variables d'environnement
 ENV PHP_VERSION=8.2
-ENV COMPOSER_VERSION=2.6.5
 ENV APP_ENV=production
 
 # Installation des dépendances système
@@ -39,7 +38,7 @@ RUN docker-php-ext-configure gd --with-freetype --with-jpeg \
         bcmath
 
 # Installation de Composer
-COPY --from=composer:${COMPOSER_VERSION} /usr/bin/composer /usr/bin/composer
+COPY --from=composer:latest /usr/bin/composer /usr/bin/composer
 
 # Création de l'utilisateur non-root
 RUN addgroup -g 1000 appuser && \

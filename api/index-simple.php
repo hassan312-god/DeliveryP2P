@@ -20,6 +20,9 @@ require_once __DIR__ . '/../config.php';
 $uri = $_SERVER['REQUEST_URI'];
 $method = $_SERVER['REQUEST_METHOD'];
 
+// Nettoyer l'URI pour gérer le préfixe /api
+$uri = str_replace('/api', '', $uri);
+
 // Routes disponibles
 $routes = [
     'GET' => [

@@ -26,10 +26,12 @@ $routes = [
         '/health' => 'health',
         '/health-test.php' => 'health',
         '/test-simple.php' => 'test_simple',
-        '/test-connection' => 'test_connection'
+        '/test-connection' => 'test_connection',
+        '/qr' => 'qr_test'
     ],
     'POST' => [
-        '/qr/generate' => 'qr_generate'
+        '/qr/generate' => 'qr_generate',
+        '/qr' => 'qr_generate'
     ]
 ];
 
@@ -85,27 +87,64 @@ function test_connection() {
 // Fonction de génération QR
 function qr_generate() {
     $input = json_decode(file_get_contents('php://input'), true);
+    $data = $input['data'] ?? 'test';
+    $size = $input['size'] ?? 200;
+    
+    // Générer un QR code simple en base64 (simulation)
+    // En production, vous utiliseriez une librairie comme endroid/qr-code
+    $qr_data = base64_encode($data . '_' . time());
     
     return [
         'success' => true,
         'data' => [
-            'qr_code' => 'generated',
-            'data' => $input['data'] ?? 'test',
-            'size' => $input['size'] ?? 200,
-            'timestamp' => date('c')
+            'qr_code' => $qr_data,
+            'qr_code_url' => 'data:image/png;base64,' . $qr_data,
+            'data' => $data,
+            'size' => $size,
+            'timestamp' => date('c'),
+            'message' => 'QR code généré avec succès'
         ]
     ];
 }
 
-// Router simple
+// Fonction de test QR
+function qr_test() {
+    return [
+        'success' => true,
+        'message' => 'QR API endpoint accessible',
+        'endpoints' => [
+            'GET /qr' => 'Test endpoint',
+            'POST /qr/generate' => 'Generate QR code'
+        ],
+        'timestamp' => date('c')
+    ];
+}
+
+// Router simple - amélioré
 $route_found = false;
-foreach ($routes[$method] ?? [] as $route => $handler) {
-    if (strpos($uri, $route) !== false) {
+$method_routes = $routes[$method] ?? [];
+
+// Essayer d'abord les routes exactes
+foreach ($method_routes as $route => $handler) {
+    if ($uri === $route || $uri === $route . '/') {
         $route_found = true;
         $response = $handler();
         http_response_code(200);
         echo json_encode($response, JSON_PRETTY_PRINT);
         break;
+    }
+}
+
+// Si pas trouvé, essayer les routes partielles
+if (!$route_found) {
+    foreach ($method_routes as $route => $handler) {
+        if (strpos($uri, $route) !== false) {
+            $route_found = true;
+            $response = $handler();
+            http_response_code(200);
+            echo json_encode($response, JSON_PRETTY_PRINT);
+            break;
+        }
     }
 }
 

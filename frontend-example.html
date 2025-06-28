@@ -1,0 +1,247 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>DeliveryP2P - QR Code Generator</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+        }
+
+        .container {
+            background: white;
+            border-radius: 20px;
+            box-shadow: 0 20px 40px rgba(0,0,0,0.1);
+            padding: 40px;
+            max-width: 500px;
+            width: 100%;
+        }
+
+        h1 {
+            text-align: center;
+            color: #333;
+            margin-bottom: 30px;
+            font-size: 2.5em;
+        }
+
+        .form-group {
+            margin-bottom: 20px;
+        }
+
+        label {
+            display: block;
+            margin-bottom: 8px;
+            color: #555;
+            font-weight: 600;
+        }
+
+        input, select {
+            width: 100%;
+            padding: 12px;
+            border: 2px solid #e1e5e9;
+            border-radius: 10px;
+            font-size: 16px;
+            transition: border-color 0.3s ease;
+        }
+
+        input:focus, select:focus {
+            outline: none;
+            border-color: #667eea;
+        }
+
+        button {
+            width: 100%;
+            padding: 15px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border: none;
+            border-radius: 10px;
+            font-size: 18px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: transform 0.2s ease;
+        }
+
+        button:hover {
+            transform: translateY(-2px);
+        }
+
+        button:disabled {
+            opacity: 0.6;
+            cursor: not-allowed;
+            transform: none;
+        }
+
+        .qr-result {
+            margin-top: 30px;
+            text-align: center;
+            display: none;
+        }
+
+        .qr-image {
+            max-width: 300px;
+            border-radius: 10px;
+            box-shadow: 0 10px 20px rgba(0,0,0,0.1);
+            margin: 20px auto;
+        }
+
+        .loading {
+            display: none;
+            text-align: center;
+            margin: 20px 0;
+        }
+
+        .spinner {
+            border: 4px solid #f3f3f3;
+            border-top: 4px solid #667eea;
+            border-radius: 50%;
+            width: 40px;
+            height: 40px;
+            animation: spin 1s linear infinite;
+            margin: 0 auto;
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        .error {
+            background: #fee;
+            color: #c33;
+            padding: 15px;
+            border-radius: 10px;
+            margin: 20px 0;
+            display: none;
+        }
+
+        .success {
+            background: #efe;
+            color: #363;
+            padding: 15px;
+            border-radius: 10px;
+            margin: 20px 0;
+            display: none;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🎯 QR Code Generator</h1>
+        
+        <form id="qrForm">
+            <div class="form-group">
+                <label for="qrData">Données à encoder :</label>
+                <input type="text" id="qrData" placeholder="https://deliveryp2p.onrender.com" required>
+            </div>
+            
+            <div class="form-group">
+                <label for="qrSize">Taille du QR code :</label>
+                <select id="qrSize">
+                    <option value="200">200px (Petit)</option>
+                    <option value="300" selected>300px (Moyen)</option>
+                    <option value="400">400px (Grand)</option>
+                </select>
+            </div>
+            
+            <button type="submit" id="generateBtn">🚀 Générer QR Code</button>
+        </form>
+
+        <div class="loading" id="loading">
+            <div class="spinner"></div>
+            <p>Génération en cours...</p>
+        </div>
+
+        <div class="error" id="error"></div>
+        <div class="success" id="success"></div>
+
+        <div class="qr-result" id="qrResult">
+            <h3>✅ QR Code généré !</h3>
+            <img id="qrImage" class="qr-image" alt="QR Code">
+            <p id="qrInfo"></p>
+        </div>
+    </div>
+
+    <script>
+        const API_URL = 'http://localhost:8000'; // Changez pour https://deliveryp2p-api.onrender.com en production
+        
+        document.getElementById('qrForm').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            
+            const data = document.getElementById('qrData').value;
+            const size = document.getElementById('qrSize').value;
+            const generateBtn = document.getElementById('generateBtn');
+            const loading = document.getElementById('loading');
+            const error = document.getElementById('error');
+            const success = document.getElementById('success');
+            const qrResult = document.getElementById('qrResult');
+            
+            // Reset UI
+            error.style.display = 'none';
+            success.style.display = 'none';
+            qrResult.style.display = 'none';
+            generateBtn.disabled = true;
+            loading.style.display = 'block';
+            
+            try {
+                const response = await fetch(`${API_URL}/qr/generate`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({ data, size })
+                });
+                
+                const result = await response.json();
+                
+                if (result.success) {
+                    // Afficher le QR code
+                    const qrImage = document.getElementById('qrImage');
+                    const qrInfo = document.getElementById('qrInfo');
+                    
+                    qrImage.src = result.data.qr_code_url;
+                    qrInfo.textContent = `Données: ${result.data.data} | Taille: ${result.data.size}px | Généré le: ${new Date(result.data.timestamp).toLocaleString()}`;
+                    
+                    qrResult.style.display = 'block';
+                    success.style.display = 'block';
+                    success.textContent = result.data.message;
+                } else {
+                    throw new Error(result.error || 'Erreur inconnue');
+                }
+                
+            } catch (err) {
+                error.style.display = 'block';
+                error.textContent = `Erreur: ${err.message}`;
+                console.error('Erreur génération QR:', err);
+            } finally {
+                generateBtn.disabled = false;
+                loading.style.display = 'none';
+            }
+        });
+
+        // Test de connexion au chargement
+        window.addEventListener('load', async () => {
+            try {
+                const response = await fetch(`${API_URL}/health`);
+                const result = await response.json();
+                console.log('API Status:', result);
+            } catch (err) {
+                console.warn('API non accessible:', err.message);
+            }
+        });
+    </script>
+</body>
+</html> 

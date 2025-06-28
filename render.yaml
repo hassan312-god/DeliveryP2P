@@ -1,25 +1,15 @@
 services:
   - type: web
-    name: deliveryp2p-complete
-    runtime: docker
-    dockerfilePath: ./Dockerfile.complete
-    dockerContext: .
-    plan: free
-    region: oregon
+    name: deliveryp2p-api
+    env: php
+    buildCommand: echo "No build required for PHP"
+    startCommand: cd api && php -S 0.0.0.0:$PORT index-simple.php
     envVars:
       - key: APP_ENV
         value: production
-      - key: APP_DEBUG
-        value: "false"
       - key: SUPABASE_URL
         sync: false
       - key: SUPABASE_ANON_KEY
         sync: false
       - key: SUPABASE_SERVICE_ROLE_KEY
-        sync: false
-      - key: STRIPE_PUBLIC_KEY
-        sync: false
-      - key: STRIPE_SECRET_KEY
-        sync: false
-      - key: STRIPE_WEBHOOK_SECRET
         sync: false 

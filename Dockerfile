@@ -38,7 +38,7 @@ RUN echo "memory_limit = 256M" >> /usr/local/etc/php/conf.d/custom.ini \
     && echo "display_errors = Off" >> /usr/local/etc/php/conf.d/custom.ini \
     && echo "log_errors = On" >> /usr/local/etc/php/conf.d/custom.ini
 
-# Configuration Apache complète
+# Configuration Apache complète avec gestion correcte des routes API
 RUN echo '<VirtualHost *:80>' > /etc/apache2/sites-available/000-default.conf \
     && echo '    DocumentRoot /var/www/html/frontend' >> /etc/apache2/sites-available/000-default.conf \
     && echo '    ServerAdmin webmaster@localhost' >> /etc/apache2/sites-available/000-default.conf \
@@ -54,6 +54,17 @@ RUN echo '<VirtualHost *:80>' > /etc/apache2/sites-available/000-default.conf \
     && echo '        AllowOverride All' >> /etc/apache2/sites-available/000-default.conf \
     && echo '        Require all granted' >> /etc/apache2/sites-available/000-default.conf \
     && echo '    </Directory>' >> /etc/apache2/sites-available/000-default.conf \
+    && echo '    # Alias pour les routes API' >> /etc/apache2/sites-available/000-default.conf \
+    && echo '    Alias /api /var/www/html/api' >> /etc/apache2/sites-available/000-default.conf \
+    && echo '    <Directory /var/www/html/api>' >> /etc/apache2/sites-available/000-default.conf \
+    && echo '        RewriteEngine On' >> /etc/apache2/sites-available/000-default.conf \
+    && echo '        RewriteCond %{REQUEST_FILENAME} !-f' >> /etc/apache2/sites-available/000-default.conf \
+    && echo '        RewriteCond %{REQUEST_FILENAME} !-d' >> /etc/apache2/sites-available/000-default.conf \
+    && echo '        RewriteRule ^(.*)$ index.php [QSA,L]' >> /etc/apache2/sites-available/000-default.conf \
+    && echo '    </Directory>' >> /etc/apache2/sites-available/000-default.conf \
+    && echo '    # Alias pour le health check' >> /etc/apache2/sites-available/000-default.conf \
+    && echo '    Alias /health /var/www/html/api/health.php' >> /etc/apache2/sites-available/000-default.conf \
+    && echo '    Alias /test-connection /var/www/html/api/test-connection.php' >> /etc/apache2/sites-available/000-default.conf \
     && echo '</VirtualHost>' >> /etc/apache2/sites-available/000-default.conf
 
 # Rendre le script de démarrage exécutable

@@ -1,13 +1,11 @@
 services:
   - type: web
-    name: deliveryp2p-api
+    name: deliveryp2p-complete
     runtime: docker
-    dockerfilePath: ./Dockerfile
+    dockerfilePath: ./Dockerfile.complete
     dockerContext: .
     plan: free
     region: oregon
-    buildCommand: composer install --optimize-autoloader --no-dev --no-interaction
-    startCommand: /var/www/html/start.sh
     envVars:
       - key: APP_ENV
         value: production

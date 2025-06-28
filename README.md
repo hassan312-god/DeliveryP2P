@@ -77,3 +77,24 @@ Pour toute question ou problème, consultez la documentation ou ouvrez une issue
 ---
 
 **🎉 Interface prête à l'utilisation !**
+
+## 🔄 Migration Supabase
+
+⚠️ **Note importante :** Tous les fichiers JavaScript liés à Supabase ont été supprimés.
+
+### Fichiers supprimés :
+- `frontend/js/supabase.js`
+- `frontend/js/services/supabase.js`
+- `frontend/js/modules/auth.js` (ancien)
+- `frontend/test-supabase-*.html`
+
+### Fichiers à implémenter :
+- `frontend/js/modules/auth.js` (nouveau - vide, prêt pour votre implémentation)
+- Configuration de connexion dans `frontend/config.js`
+
+### Prochaines étapes :
+1. Implémentez votre nouvelle logique d'authentification
+2. Mettez à jour `frontend/js/modules/auth.js`
+3. Configurez les URLs d'API dans `frontend/config.js`
+4. Testez l'authentification
+

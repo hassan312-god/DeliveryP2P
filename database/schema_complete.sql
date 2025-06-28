@@ -489,7 +489,7 @@ CREATE POLICY "Users can create their own ads" ON ads
 CREATE POLICY "Users can view their own deliveries" ON deliveries
     FOR SELECT USING (
         courier_id = auth.uid() OR 
-        expeditor_id IN (SELECT expeditor_id FROM ads WHERE id = ad_id)
+        ad_id IN (SELECT id FROM ads WHERE expeditor_id = auth.uid())
     );
 
 -- Note: Ces politiques RLS sont des exemples. 

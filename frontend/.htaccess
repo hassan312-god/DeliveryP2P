@@ -3,12 +3,13 @@
 
 RewriteEngine On
 
-# Headers de sécurité
-Header always set X-Content-Type-Options nosniff
-Header always set X-Frame-Options DENY
-Header always set X-XSS-Protection "1; mode=block"
-Header always set Referrer-Policy "strict-origin-when-cross-origin"
-Header always set Strict-Transport-Security "max-age=31536000; includeSubDomains"
+# Headers de sécurité (avec vérification de module)
+<IfModule mod_headers.c>
+    Header always set X-Content-Type-Options nosniff
+    Header always set X-Frame-Options DENY
+    Header always set X-XSS-Protection "1; mode=block"
+    Header always set Referrer-Policy "strict-origin-when-cross-origin"
+</IfModule>
 
 # Compression gzip
 <IfModule mod_deflate.c>
@@ -73,13 +74,13 @@ RewriteRule ^(.*)$ index.html [QSA,L]
     Deny from all
 </Files>
 
-# Limitation de la taille des uploads
-php_value upload_max_filesize 10M
-php_value post_max_size 10M
-php_value max_execution_time 30
-php_value memory_limit 256M
-
-# Configuration des erreurs
-php_flag display_errors off
-php_flag log_errors on
-php_value error_log /dev/stderr 
+# Configuration PHP (avec vérification)
+<IfModule mod_php.c>
+    php_value upload_max_filesize 10M
+    php_value post_max_size 10M
+    php_value max_execution_time 30
+    php_value memory_limit 256M
+    php_flag display_errors off
+    php_flag log_errors on
+    php_value error_log /dev/stderr
+</IfModule> 

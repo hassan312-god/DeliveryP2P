@@ -20,8 +20,8 @@ RUN apt-get update && apt-get install -y \
 # Installation de Composer
 COPY --from=composer:latest /usr/bin/composer /usr/bin/composer
 
-# Configuration Apache
-RUN a2enmod rewrite
+# Configuration Apache - Activation des modules nécessaires
+RUN a2enmod rewrite && a2enmod headers && a2enmod expires && a2enmod deflate
 
 # Configuration du DocumentRoot pour servir depuis frontend/
 RUN echo "DocumentRoot /var/www/html/frontend" > /etc/apache2/sites-available/000-default.conf

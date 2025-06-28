@@ -1,0 +1,272 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Hors ligne - LivraisonP2P</title>
+    <meta name="description" content="Vous êtes actuellement hors ligne">
+    <link rel="icon" type="image/x-icon" href="/assets/images/favicon.ico">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <link href="./css/app-styles.css" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.1.1/css/all.min.css" rel="stylesheet">
+    <style>
+        body {
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            background: var(--bg-secondary);
+            align-items: center;
+            justify-content: center;
+            text-align: center;
+            padding: 2rem;
+        }
+        
+        .offline-container {
+            max-width: 500px;
+            background: var(--bg-primary);
+            border-radius: var(--border-radius-lg);
+            box-shadow: var(--shadow-lg);
+            padding: 3rem 2rem;
+            border: 1px solid var(--border-color);
+        }
+        
+        .offline-icon {
+            font-size: 4rem;
+            color: var(--text-light);
+            margin-bottom: 1.5rem;
+        }
+        
+        .offline-title {
+            font-size: 2rem;
+            font-weight: 800;
+            color: var(--text-primary);
+            margin-bottom: 1rem;
+        }
+        
+        .offline-message {
+            color: var(--text-secondary);
+            margin-bottom: 2rem;
+            line-height: 1.6;
+        }
+        
+        .offline-actions {
+            display: flex;
+            gap: 1rem;
+            justify-content: center;
+            flex-wrap: wrap;
+        }
+        
+        .btn-retry {
+            background: var(--primary-color);
+            color: white;
+            border: none;
+            padding: 0.75rem 1.5rem;
+            border-radius: var(--border-radius);
+            font-weight: 600;
+            cursor: pointer;
+            transition: var(--transition);
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+        
+        .btn-retry:hover {
+            background: var(--primary-dark);
+            transform: translateY(-2px);
+        }
+        
+        .btn-home {
+            background: var(--bg-secondary);
+            color: var(--text-secondary);
+            border: 1px solid var(--border-color);
+            padding: 0.75rem 1.5rem;
+            border-radius: var(--border-radius);
+            font-weight: 600;
+            cursor: pointer;
+            transition: var(--transition);
+            text-decoration: none;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+        
+        .btn-home:hover {
+            border-color: var(--primary-color);
+            color: var(--primary-color);
+        }
+        
+        .connection-status {
+            margin-top: 2rem;
+            padding: 1rem;
+            background: var(--bg-accent);
+            border-radius: var(--border-radius);
+            border-left: 4px solid var(--primary-color);
+        }
+        
+        .status-indicator {
+            display: inline-block;
+            width: 8px;
+            height: 8px;
+            border-radius: 50%;
+            background: var(--error-color);
+            margin-right: 0.5rem;
+            animation: pulse 2s infinite;
+        }
+        
+        @keyframes pulse {
+            0% { opacity: 1; }
+            50% { opacity: 0.5; }
+            100% { opacity: 1; }
+        }
+        
+        .cached-content {
+            margin-top: 2rem;
+            text-align: left;
+        }
+        
+        .cached-content h4 {
+            color: var(--text-primary);
+            margin-bottom: 1rem;
+        }
+        
+        .cached-links {
+            display: flex;
+            flex-direction: column;
+            gap: 0.5rem;
+        }
+        
+        .cached-links a {
+            color: var(--primary-color);
+            text-decoration: none;
+            padding: 0.5rem;
+            border-radius: var(--border-radius-sm);
+            transition: var(--transition);
+        }
+        
+        .cached-links a:hover {
+            background: var(--bg-accent);
+        }
+        
+        @media (max-width: 600px) {
+            .offline-container {
+                padding: 2rem 1rem;
+            }
+            
+            .offline-actions {
+                flex-direction: column;
+            }
+            
+            .offline-title {
+                font-size: 1.5rem;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="offline-container">
+        <div class="offline-icon">
+            <i class="fas fa-wifi-slash"></i>
+        </div>
+        
+        <h1 class="offline-title">Vous êtes hors ligne</h1>
+        
+        <p class="offline-message">
+            Il semble que vous ayez perdu votre connexion internet. 
+            Certaines fonctionnalités peuvent ne pas être disponibles.
+        </p>
+        
+        <div class="offline-actions">
+            <button class="btn-retry" onclick="retryConnection()">
+                <i class="fas fa-redo"></i>
+                Réessayer
+            </button>
+            
+            <a href="/" class="btn-home">
+                <i class="fas fa-home"></i>
+                Accueil
+            </a>
+        </div>
+        
+        <div class="connection-status">
+            <span class="status-indicator"></span>
+            <strong>Statut de connexion :</strong> Hors ligne
+        </div>
+        
+        <div class="cached-content">
+            <h4>Contenu disponible hors ligne :</h4>
+            <div class="cached-links">
+                <a href="/auth/login.html">
+                    <i class="fas fa-sign-in-alt"></i>
+                    Page de connexion
+                </a>
+                <a href="/auth/register.html">
+                    <i class="fas fa-user-plus"></i>
+                    Page d'inscription
+                </a>
+                <a href="/client/dashboard.html">
+                    <i class="fas fa-tachometer-alt"></i>
+                    Dashboard client
+                </a>
+                <a href="/courier/dashboard.html">
+                    <i class="fas fa-truck"></i>
+                    Dashboard livreur
+                </a>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Vérification de la connexion
+        function checkConnection() {
+            const statusIndicator = document.querySelector('.status-indicator');
+            const statusText = document.querySelector('.connection-status strong');
+            
+            if (navigator.onLine) {
+                statusIndicator.style.background = 'var(--success-color)';
+                statusText.textContent = 'Statut de connexion : En ligne';
+                statusText.nextSibling.textContent = ' - En ligne';
+                
+                // Redirection automatique après 3 secondes
+                setTimeout(() => {
+                    window.location.href = '/';
+                }, 3000);
+            } else {
+                statusIndicator.style.background = 'var(--error-color)';
+                statusText.textContent = 'Statut de connexion : Hors ligne';
+                statusText.nextSibling.textContent = ' - Hors ligne';
+            }
+        }
+        
+        // Réessayer la connexion
+        function retryConnection() {
+            const retryBtn = document.querySelector('.btn-retry');
+            retryBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Vérification...';
+            retryBtn.disabled = true;
+            
+            // Simuler une vérification
+            setTimeout(() => {
+                checkConnection();
+                retryBtn.innerHTML = '<i class="fas fa-redo"></i> Réessayer';
+                retryBtn.disabled = false;
+            }, 2000);
+        }
+        
+        // Écouteurs d'événements
+        window.addEventListener('online', () => {
+            checkConnection();
+        });
+        
+        window.addEventListener('offline', () => {
+            checkConnection();
+        });
+        
+        // Vérification initiale
+        document.addEventListener('DOMContentLoaded', () => {
+            checkConnection();
+        });
+        
+        // Vérification périodique
+        setInterval(checkConnection, 5000);
+    </script>
+</body>
+</html> 

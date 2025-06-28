@@ -20,8 +20,14 @@ require_once __DIR__ . '/../config.php';
 $uri = $_SERVER['REQUEST_URI'];
 $method = $_SERVER['REQUEST_METHOD'];
 
+// Debug: afficher l'URI original
+error_log("DEBUG: URI original = " . $uri);
+
 // Nettoyer l'URI pour gérer le préfixe /api
 $uri = str_replace('/api', '', $uri);
+
+// Debug: afficher l'URI nettoyé
+error_log("DEBUG: URI nettoyé = " . $uri);
 
 // Routes disponibles
 $routes = [
@@ -326,6 +332,8 @@ if (!$route_found) {
     echo json_encode([
         'success' => false,
         'error' => 'Route not found: ' . $method . ' ' . $uri,
+        'uri_original' => $_SERVER['REQUEST_URI'],
+        'uri_cleaned' => $uri,
         'available_routes' => array_keys($routes[$method] ?? []),
         'timestamp' => date('c')
     ], JSON_PRETTY_PRINT);

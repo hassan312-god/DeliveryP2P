@@ -1,0 +1,388 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>DeliveryP2P - Test Supabase</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 20px;
+            box-shadow: 0 20px 40px rgba(0,0,0,0.1);
+            padding: 40px;
+        }
+
+        h1 {
+            text-align: center;
+            color: #333;
+            margin-bottom: 30px;
+            font-size: 2.5em;
+        }
+
+        .test-section {
+            margin-bottom: 40px;
+            padding: 20px;
+            border: 2px solid #e1e5e9;
+            border-radius: 15px;
+        }
+
+        .test-section h3 {
+            color: #333;
+            margin-bottom: 15px;
+            font-size: 1.5em;
+        }
+
+        .form-group {
+            margin-bottom: 15px;
+        }
+
+        label {
+            display: block;
+            margin-bottom: 5px;
+            color: #555;
+            font-weight: 600;
+        }
+
+        input, select, textarea {
+            width: 100%;
+            padding: 10px;
+            border: 2px solid #e1e5e9;
+            border-radius: 8px;
+            font-size: 14px;
+            transition: border-color 0.3s ease;
+        }
+
+        input:focus, select:focus, textarea:focus {
+            outline: none;
+            border-color: #667eea;
+        }
+
+        button {
+            padding: 12px 24px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border: none;
+            border-radius: 8px;
+            font-size: 16px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: transform 0.2s ease;
+            margin-right: 10px;
+            margin-bottom: 10px;
+        }
+
+        button:hover {
+            transform: translateY(-2px);
+        }
+
+        button:disabled {
+            opacity: 0.6;
+            cursor: not-allowed;
+            transform: none;
+        }
+
+        .result {
+            margin-top: 15px;
+            padding: 15px;
+            border-radius: 8px;
+            font-family: monospace;
+            font-size: 12px;
+            max-height: 200px;
+            overflow-y: auto;
+        }
+
+        .result.success {
+            background: #d4edda;
+            color: #155724;
+            border: 1px solid #c3e6cb;
+        }
+
+        .result.error {
+            background: #f8d7da;
+            color: #721c24;
+            border: 1px solid #f5c6cb;
+        }
+
+        .result.info {
+            background: #d1ecf1;
+            color: #0c5460;
+            border: 1px solid #bee5eb;
+        }
+
+        .status {
+            display: inline-block;
+            padding: 5px 10px;
+            border-radius: 15px;
+            font-size: 12px;
+            font-weight: 600;
+            margin-left: 10px;
+        }
+
+        .status.success {
+            background: #28a745;
+            color: white;
+        }
+
+        .status.error {
+            background: #dc3545;
+            color: white;
+        }
+
+        .status.pending {
+            background: #ffc107;
+            color: #212529;
+        }
+
+        .grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 20px;
+            margin-top: 20px;
+        }
+
+        .loading {
+            display: none;
+            text-align: center;
+            margin: 10px 0;
+        }
+
+        .spinner {
+            border: 3px solid #f3f3f3;
+            border-top: 3px solid #667eea;
+            border-radius: 50%;
+            width: 30px;
+            height: 30px;
+            animation: spin 1s linear infinite;
+            margin: 0 auto;
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🧪 Test Supabase DeliveryP2P</h1>
+        
+        <div class="test-section">
+            <h3>🔗 Test de Connexion</h3>
+            <p>Testez la connexion à votre base de données Supabase</p>
+            <button onclick="testConnection()">Test de Connexion</button>
+            <div id="connectionResult" class="result" style="display: none;"></div>
+        </div>
+
+        <div class="grid">
+            <div class="test-section">
+                <h3>👤 Créer un Utilisateur</h3>
+                <div class="form-group">
+                    <label for="userEmail">Email :</label>
+                    <input type="email" id="userEmail" value="test@deliveryp2p.com">
+                </div>
+                <div class="form-group">
+                    <label for="userPassword">Mot de passe :</label>
+                    <input type="password" id="userPassword" value="testpassword123">
+                </div>
+                <div class="form-group">
+                    <label for="userFirstName">Prénom :</label>
+                    <input type="text" id="userFirstName" value="Test">
+                </div>
+                <div class="form-group">
+                    <label for="userLastName">Nom :</label>
+                    <input type="text" id="userLastName" value="User">
+                </div>
+                <div class="form-group">
+                    <label for="userRole">Rôle :</label>
+                    <select id="userRole">
+                        <option value="client">Client</option>
+                        <option value="driver">Livreur</option>
+                        <option value="admin">Admin</option>
+                    </select>
+                </div>
+                <button onclick="createUser()">Créer Utilisateur</button>
+                <div id="userResult" class="result" style="display: none;"></div>
+            </div>
+
+            <div class="test-section">
+                <h3>🎯 Créer un QR Code</h3>
+                <div class="form-group">
+                    <label for="qrData">Données :</label>
+                    <input type="text" id="qrData" value="https://deliveryp2p.onrender.com/delivery/123">
+                </div>
+                <div class="form-group">
+                    <label for="qrSize">Taille :</label>
+                    <select id="qrSize">
+                        <option value="200">200px</option>
+                        <option value="300" selected>300px</option>
+                        <option value="400">400px</option>
+                    </select>
+                </div>
+                <button onclick="createQR()">Créer QR Code</button>
+                <div id="qrResult" class="result" style="display: none;"></div>
+            </div>
+
+            <div class="test-section">
+                <h3>📦 Créer une Livraison</h3>
+                <div class="form-group">
+                    <label for="deliveryClientId">ID Client :</label>
+                    <input type="text" id="deliveryClientId" value="test-client-123">
+                </div>
+                <div class="form-group">
+                    <label for="pickupAddress">Adresse de ramassage :</label>
+                    <textarea id="pickupAddress" rows="2">123 Rue de la Paix, Paris</textarea>
+                </div>
+                <div class="form-group">
+                    <label for="deliveryAddress">Adresse de livraison :</label>
+                    <textarea id="deliveryAddress" rows="2">456 Avenue des Champs, Paris</textarea>
+                </div>
+                <div class="form-group">
+                    <label for="deliveryWeight">Poids (kg) :</label>
+                    <input type="number" id="deliveryWeight" value="2.5" step="0.1">
+                </div>
+                <div class="form-group">
+                    <label for="deliveryPrice">Prix (€) :</label>
+                    <input type="number" id="deliveryPrice" value="15.50" step="0.01">
+                </div>
+                <button onclick="createDelivery()">Créer Livraison</button>
+                <div id="deliveryResult" class="result" style="display: none;"></div>
+            </div>
+
+            <div class="test-section">
+                <h3>📋 Récupérer les Données</h3>
+                <button onclick="getUsers()">Récupérer Utilisateurs</button>
+                <button onclick="getQRs()">Récupérer QR Codes</button>
+                <button onclick="getDeliveries()">Récupérer Livraisons</button>
+                <div id="dataResult" class="result" style="display: none;"></div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const API_URL = 'http://localhost:8000'; // Changez pour https://deliveryp2p-api.onrender.com en production
+        
+        function showResult(elementId, data, type = 'info') {
+            const element = document.getElementById(elementId);
+            element.style.display = 'block';
+            element.className = `result ${type}`;
+            element.textContent = JSON.stringify(data, null, 2);
+        }
+
+        function hideResult(elementId) {
+            document.getElementById(elementId).style.display = 'none';
+        }
+
+        async function makeRequest(endpoint, method = 'GET', data = null) {
+            try {
+                const options = {
+                    method,
+                    headers: {
+                        'Content-Type': 'application/json',
+                    }
+                };
+
+                if (data) {
+                    options.body = JSON.stringify(data);
+                }
+
+                const response = await fetch(`${API_URL}${endpoint}`, options);
+                const result = await response.json();
+                
+                return {
+                    success: response.ok,
+                    data: result
+                };
+            } catch (error) {
+                return {
+                    success: false,
+                    error: error.message
+                };
+            }
+        }
+
+        async function testConnection() {
+            hideResult('connectionResult');
+            const result = await makeRequest('/supabase/test');
+            showResult('connectionResult', result.data, result.success ? 'success' : 'error');
+        }
+
+        async function createUser() {
+            hideResult('userResult');
+            const userData = {
+                email: document.getElementById('userEmail').value,
+                password: document.getElementById('userPassword').value,
+                first_name: document.getElementById('userFirstName').value,
+                last_name: document.getElementById('userLastName').value,
+                role: document.getElementById('userRole').value
+            };
+            
+            const result = await makeRequest('/supabase/users', 'POST', userData);
+            showResult('userResult', result.data, result.success ? 'success' : 'error');
+        }
+
+        async function createQR() {
+            hideResult('qrResult');
+            const qrData = {
+                data: document.getElementById('qrData').value,
+                size: parseInt(document.getElementById('qrSize').value)
+            };
+            
+            const result = await makeRequest('/supabase/qr', 'POST', qrData);
+            showResult('qrResult', result.data, result.success ? 'success' : 'error');
+        }
+
+        async function createDelivery() {
+            hideResult('deliveryResult');
+            const deliveryData = {
+                client_id: document.getElementById('deliveryClientId').value,
+                pickup_address: document.getElementById('pickupAddress').value,
+                delivery_address: document.getElementById('deliveryAddress').value,
+                weight: parseFloat(document.getElementById('deliveryWeight').value),
+                price: parseFloat(document.getElementById('deliveryPrice').value)
+            };
+            
+            const result = await makeRequest('/supabase/delivery', 'POST', deliveryData);
+            showResult('deliveryResult', result.data, result.success ? 'success' : 'error');
+        }
+
+        async function getUsers() {
+            hideResult('dataResult');
+            const result = await makeRequest('/supabase/users');
+            showResult('dataResult', result.data, result.success ? 'success' : 'error');
+        }
+
+        async function getQRs() {
+            hideResult('dataResult');
+            const result = await makeRequest('/supabase/qr');
+            showResult('dataResult', result.data, result.success ? 'success' : 'error');
+        }
+
+        async function getDeliveries() {
+            hideResult('dataResult');
+            const result = await makeRequest('/supabase/delivery');
+            showResult('dataResult', result.data, result.success ? 'success' : 'error');
+        }
+
+        // Test de connexion au chargement
+        window.addEventListener('load', async () => {
+            console.log('Interface de test Supabase chargée');
+            console.log('API URL:', API_URL);
+        });
+    </script>
+</body>
+</html> 

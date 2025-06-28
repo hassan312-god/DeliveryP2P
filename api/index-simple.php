@@ -27,11 +27,16 @@ $routes = [
         '/health-test.php' => 'health',
         '/test-simple.php' => 'test_simple',
         '/test-connection' => 'test_connection',
-        '/qr' => 'qr_test'
+        '/qr' => 'qr_test',
+        '/supabase/test' => 'supabase_test',
+        '/supabase/profiles' => 'supabase_get_profiles'
     ],
     'POST' => [
         '/qr/generate' => 'qr_generate',
-        '/qr' => 'qr_generate'
+        '/qr' => 'qr_generate',
+        '/supabase/profiles' => 'supabase_create_profile',
+        '/supabase/qr' => 'supabase_create_qr',
+        '/supabase/delivery' => 'supabase_create_delivery'
     ]
 ];
 
@@ -116,6 +121,138 @@ function qr_test() {
             'GET /qr' => 'Test endpoint',
             'POST /qr/generate' => 'Generate QR code'
         ],
+        'timestamp' => date('c')
+    ];
+}
+
+// Fonction de test Supabase
+function supabase_test() {
+    require_once __DIR__ . '/SupabaseClient.php';
+    
+    $client = new SupabaseClient();
+    $result = $client->testConnection();
+    
+    return [
+        'success' => $result['success'],
+        'message' => $result['message'] ?? $result['error'] ?? 'Test Supabase',
+        'timestamp' => date('c'),
+        'config' => [
+            'url_configured' => !empty($_ENV['SUPABASE_URL']),
+            'anon_key_configured' => !empty($_ENV['SUPABASE_ANON_KEY']),
+            'service_key_configured' => !empty($_ENV['SUPABASE_SERVICE_ROLE_KEY'])
+        ]
+    ];
+}
+
+// Fonction pour créer un profil dans Supabase
+function supabase_create_profile() {
+    require_once __DIR__ . '/SupabaseClient.php';
+    
+    $input = json_decode(file_get_contents('php://input'), true);
+    
+    if (empty($input['first_name']) || empty($input['last_name'])) {
+        return [
+            'success' => false,
+            'error' => 'Prénom et nom requis'
+        ];
+    }
+    
+    $profileData = [
+        'first_name' => $input['first_name'],
+        'last_name' => $input['last_name'],
+        'phone' => $input['phone'] ?? '',
+        'role' => $input['role'] ?? 'client',
+        'avatar_url' => $input['avatar_url'] ?? '',
+        'is_verified' => false
+    ];
+    
+    $client = new SupabaseClient();
+    $result = $client->createProfile($profileData);
+    
+    return [
+        'success' => $result['success'],
+        'data' => $result['data'] ?? null,
+        'message' => $result['message'] ?? $result['error'] ?? 'Profil créé',
+        'timestamp' => date('c')
+    ];
+}
+
+// Fonction pour récupérer les profils
+function supabase_get_profiles() {
+    require_once __DIR__ . '/SupabaseClient.php';
+    
+    $client = new SupabaseClient();
+    $result = $client->getProfiles(['select' => 'id,first_name,last_name,role,created_at']);
+    
+    return [
+        'success' => $result['success'],
+        'data' => $result['data'] ?? [],
+        'count' => count($result['data'] ?? []),
+        'timestamp' => date('c')
+    ];
+}
+
+// Fonction pour créer un QR code dans Supabase
+function supabase_create_qr() {
+    require_once __DIR__ . '/SupabaseClient.php';
+    
+    $input = json_decode(file_get_contents('php://input'), true);
+    
+    if (empty($input['data'])) {
+        return [
+            'success' => false,
+            'error' => 'Données QR requises'
+        ];
+    }
+    
+    $qrData = [
+        'data' => $input['data'],
+        'size' => $input['size'] ?? 300,
+        'qr_code' => base64_encode($input['data'] . '_' . time()),
+        'status' => 'active'
+    ];
+    
+    $client = new SupabaseClient();
+    $result = $client->createQRCode($qrData);
+    
+    return [
+        'success' => $result['success'],
+        'data' => $result['data'] ?? null,
+        'message' => $result['message'] ?? $result['error'] ?? 'QR code créé',
+        'timestamp' => date('c')
+    ];
+}
+
+// Fonction pour créer une livraison dans Supabase
+function supabase_create_delivery() {
+    require_once __DIR__ . '/SupabaseClient.php';
+    
+    $input = json_decode(file_get_contents('php://input'), true);
+    
+    if (empty($input['client_id']) || empty($input['pickup_address']) || empty($input['delivery_address'])) {
+        return [
+            'success' => false,
+            'error' => 'client_id, pickup_address et delivery_address requis'
+        ];
+    }
+    
+    $deliveryData = [
+        'client_id' => $input['client_id'],
+        'driver_id' => $input['driver_id'] ?? null,
+        'pickup_address' => $input['pickup_address'],
+        'delivery_address' => $input['delivery_address'],
+        'status' => 'pending',
+        'weight' => $input['weight'] ?? 0,
+        'price' => $input['price'] ?? 0
+    ];
+    
+    $client = new SupabaseClient();
+    $result = $client->createDelivery($deliveryData);
+    
+    return [
+        'success' => $result['success'],
+        'data' => $result['data'] ?? null,
+        'message' => $result['message'] ?? $result['error'] ?? 'Livraison créée',
         'timestamp' => date('c')
     ];
 }

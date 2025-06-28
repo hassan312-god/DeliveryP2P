@@ -24,7 +24,14 @@ $method = $_SERVER['REQUEST_METHOD'];
 error_log("DEBUG: URI original = " . $uri);
 
 // Nettoyer l'URI pour gérer le préfixe /api
-$uri = str_replace('/api', '', $uri);
+// Si l'URI commence par /api, on le supprime
+if (strpos($uri, '/api') === 0) {
+    $uri = substr($uri, 4); // Supprime '/api'
+    // Si l'URI est vide après suppression, on met '/'
+    if (empty($uri)) {
+        $uri = '/';
+    }
+}
 
 // Debug: afficher l'URI nettoyé
 error_log("DEBUG: URI nettoyé = " . $uri);

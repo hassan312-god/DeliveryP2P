@@ -334,7 +334,11 @@ if (!$route_found) {
         'error' => 'Route not found: ' . $method . ' ' . $uri,
         'uri_original' => $_SERVER['REQUEST_URI'],
         'uri_cleaned' => $uri,
+        'uri_length' => strlen($uri),
+        'uri_bytes' => bin2hex($uri),
         'available_routes' => array_keys($routes[$method] ?? []),
+        'exact_match_health' => ($uri === '/health') ? 'YES' : 'NO',
+        'exact_match_supabase_test' => ($uri === '/supabase/test') ? 'YES' : 'NO',
         'timestamp' => date('c')
     ], JSON_PRETTY_PRINT);
 } 

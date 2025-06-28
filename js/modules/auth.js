@@ -9,13 +9,17 @@ class AuthModule {
         this.isAuthenticated = false;
         this.session = null;
         
+        // Initialiser le service Supabase
+        this.authService = null;
+        this.databaseService = null;
+        
         // Initialiser l'état d'authentification
         this.initAuth();
         
         // Écouter les changements d'authentification
-        // this.supabase.auth.onAuthStateChange((event, session) => {
-        //     this.handleAuthStateChange(event, session);
-        // });
+        document.addEventListener('supabaseAuthStateChange', (event) => {
+            this.handleAuthStateChange(event.detail.event, event.detail.session);
+        });
     }
 
     /**
@@ -23,10 +27,19 @@ class AuthModule {
      */
     async initAuth() {
         try {
-            // const { data: { session } } = await this.supabase.auth.getSession();
-            // if (session) {
-            //     await this.handleAuthStateChange('SIGNED_IN', session);
-            // }
+            // Initialiser les services Supabase
+            if (window.SupabaseAuthService) {
+                this.authService = new window.SupabaseAuthService();
+                this.databaseService = new window.SupabaseDatabaseService();
+            }
+            
+            // Vérifier la session actuelle
+            if (this.authService) {
+                const { success, session } = await this.authService.getSession();
+                if (success && session) {
+                    await this.handleAuthStateChange('SIGNED_IN', session);
+                }
+            }
         } catch (error) {
             console.error('Erreur lors de l\'initialisation de l\'auth:', error);
         }
@@ -67,21 +80,16 @@ class AuthModule {
      * Charger le profil utilisateur
      */
     async loadUserProfile() {
-        if (!this.currentUser) return;
+        if (!this.currentUser || !this.databaseService) return;
         
         try {
-            // const { data, error } = await this.supabase
-            //     .from('profiles')
-            //     .select('*')
-            //     .eq('id', this.currentUser.id)
-            //     .single();
+            const { success, profile } = await this.databaseService.getUserProfile(this.currentUser.id);
             
-            // if (error) {
-            //     console.error('Erreur lors du chargement du profil:', error);
-            //     return;
-            // }
-            
-            // this.currentProfile = data;
+            if (success) {
+                this.currentProfile = profile;
+            } else {
+                console.error('Erreur lors du chargement du profil');
+            }
         } catch (error) {
             console.error('Erreur lors du chargement du profil:', error);
         }
@@ -98,60 +106,36 @@ class AuthModule {
                 return { success: false, error: validation.error };
             }
 
+            if (!this.authService) {
+                return { success: false, error: 'Service d\'authentification non disponible' };
+            }
+
             // Créer le compte utilisateur
-            // const { data: authData, error: authError } = await this.supabase.auth.signUp({
-            //     email: userData.email,
-            //     password: userData.mot_de_passe,
-            //     options: {
-            //         data: {
-            //             nom: userData.nom,
-            //             prenom: userData.prenom,
-            //             telephone: userData.telephone || null,
-            //             role: userData.role || 'client'
-            //         }
-            //     }
-            // });
+            const { success, data, error } = await this.authService.signUp(
+                userData.email,
+                userData.mot_de_passe,
+                {
+                    nom: userData.nom,
+                    prenom: userData.prenom,
+                    telephone: userData.telephone || null,
+                    role: userData.role || 'client'
+                }
+            );
 
-            // if (authError) {
-            //     console.error('Erreur lors de l\'inscription:', authError);
-            //     return { 
-            //         success: false, 
-            //         error: this.translateAuthError(authError.message) 
-            //     };
-            // }
-
-            // Créer le profil utilisateur
-            // const profileData = {
-            //     id: authData.user.id,
-            //     email: userData.email,
-            //     nom: userData.nom,
-            //     prenom: userData.prenom,
-            //     telephone: userData.telephone || null,
-            //     role: userData.role || 'client',
-            //     date_inscription: new Date().toISOString(),
-            //     statut: 'en_attente_confirmation'
-            // };
-
-            // const { error: profileError } = await this.supabase
-            //     .from('profiles')
-            //     .insert([profileData]);
-
-            // if (profileError) {
-            //     console.error('Erreur lors de la création du profil:', profileError);
-            //     // Supprimer le compte auth si le profil n'a pas pu être créé
-            //     await this.supabase.auth.admin.deleteUser(authData.user.id);
-            //     return { 
-            //         success: false, 
-            //         error: 'Erreur lors de la création du profil utilisateur' 
-            //     };
-            // }
+            if (!success) {
+                console.error('Erreur lors de l\'inscription:', error);
+                return { 
+                    success: false, 
+                    error: this.translateAuthError(error?.message || 'Erreur lors de l\'inscription') 
+                };
+            }
 
             // Envoyer l'email de confirmation
             await this.sendConfirmationEmail(userData.email);
 
             return {
                 success: true,
-                user: this.currentUser,
+                user: data.user,
                 message: 'Inscription réussie ! Veuillez vérifier votre email pour confirmer votre compte.',
                 requiresConfirmation: true
             };
@@ -170,37 +154,29 @@ class AuthModule {
      */
     async login(email, password) {
         try {
-            // const { data, error } = await this.supabase.auth.signInWithPassword({
-            //     email: email,
-            //     password: password
-            // });
-            // if (error) {
-            //     console.error('Erreur lors de la connexion:', error);
-            //     return { success: false, error: this.translateAuthError(error.message) };
-            // }
+            if (!this.authService) {
+                return { success: false, error: 'Service d\'authentification non disponible' };
+            }
+
+            const { success, data, error } = await this.authService.signIn(email, password);
+            
+            if (!success) {
+                console.error('Erreur lors de la connexion:', error);
+                return { success: false, error: this.translateAuthError(error?.message || 'Erreur lors de la connexion') };
+            }
+
             // Vérifier si l'email est confirmé
-            // if (!data.user.email_confirmed_at) {
-            //     await this.supabase.auth.signOut();
-            //     return {
-            //         success: false,
-            //         error: 'Veuillez confirmer votre email avant de vous connecter. Vérifiez votre boîte de réception.',
-            //         requiresConfirmation: true
-            //     };
-            // }
-            // Charger le profil utilisateur
-            await this.loadUserProfile();
-            // Vérifier l'état du profil
-            if (!this.currentProfile || this.currentProfile.is_active === false) {
+            if (!data.user.email_confirmed_at) {
+                await this.authService.signOut();
                 return {
                     success: false,
-                    error: 'Votre compte est désactivé ou inexistant. Contactez le support.'
+                    error: 'Veuillez confirmer votre email avant de vous connecter. Vérifiez votre boîte de réception.',
+                    requiresConfirmation: true
                 };
             }
-            return {
-                success: true,
-                user: this.currentUser,
-                profile: this.currentProfile
-            };
+
+            return { success: true, user: data.user };
+
         } catch (error) {
             console.error('Erreur lors de la connexion:', error);
             return { success: false, error: 'Erreur serveur lors de la connexion' };
@@ -212,14 +188,28 @@ class AuthModule {
      */
     async logout() {
         try {
-            // const { error } = await this.supabase.auth.signOut();
+            if (!this.authService) {
+                return { success: false, error: 'Service d\'authentification non disponible' };
+            }
+
+            const { success, error } = await this.authService.signOut();
             
-            // if (error) {
-            //     console.error('Erreur lors de la déconnexion:', error);
-            //     return { success: false, error: 'Erreur lors de la déconnexion' };
-            // }
+            if (!success) {
+                console.error('Erreur lors de la déconnexion:', error);
+                return { success: false, error: 'Erreur lors de la déconnexion' };
+            }
+
+            // Réinitialiser l'état local
+            this.currentUser = null;
+            this.currentProfile = null;
+            this.isAuthenticated = false;
+            this.session = null;
+
+            // Envoyer l'événement de déconnexion
+            this.dispatchAuthEvent('logout');
 
             return { success: true };
+
         } catch (error) {
             console.error('Erreur lors de la déconnexion:', error);
             return { success: false, error: 'Erreur serveur lors de la déconnexion' };
@@ -227,45 +217,50 @@ class AuthModule {
     }
 
     /**
-     * Envoyer un email de confirmation
+     * Envoyer l'email de confirmation
      */
     async sendConfirmationEmail(email) {
         try {
-            // const { error } = await this.supabase.auth.resend({
-            //     type: 'signup',
-            //     email: email
-            // });
+            if (!this.authService) {
+                return { success: false, error: 'Service d\'authentification non disponible' };
+            }
 
-            // if (error) {
-            //     console.error('Erreur lors de l\'envoi de l\'email de confirmation:', error);
-            //     return { success: false, error: 'Erreur lors de l\'envoi de l\'email' };
-            // }
+            const { success, error } = await this.authService.resendConfirmationEmail(email);
+            
+            if (!success) {
+                console.error('Erreur lors de l\'envoi de l\'email de confirmation:', error);
+                return { success: false, error: 'Erreur lors de l\'envoi de l\'email de confirmation' };
+            }
 
             return { success: true };
+
         } catch (error) {
             console.error('Erreur lors de l\'envoi de l\'email de confirmation:', error);
-            return { success: false, error: 'Erreur serveur' };
+            return { success: false, error: 'Erreur serveur lors de l\'envoi de l\'email' };
         }
     }
 
     /**
-     * Envoyer un email de réinitialisation de mot de passe
+     * Envoyer l'email de réinitialisation de mot de passe
      */
     async sendPasswordResetEmail(email) {
         try {
-            // const { error } = await this.supabase.auth.resetPasswordForEmail(email, {
-            //     redirectTo: `${window.location.origin}/auth/reset-password.html`
-            // });
+            if (!this.authService) {
+                return { success: false, error: 'Service d\'authentification non disponible' };
+            }
 
-            // if (error) {
-            //     console.error('Erreur lors de l\'envoi de l\'email de réinitialisation:', error);
-            //     return { success: false, error: 'Erreur lors de l\'envoi de l\'email' };
-            // }
+            const { success, error } = await this.authService.sendPasswordResetEmail(email);
+            
+            if (!success) {
+                console.error('Erreur lors de l\'envoi de l\'email de réinitialisation:', error);
+                return { success: false, error: 'Erreur lors de l\'envoi de l\'email de réinitialisation' };
+            }
 
             return { success: true };
+
         } catch (error) {
             console.error('Erreur lors de l\'envoi de l\'email de réinitialisation:', error);
-            return { success: false, error: 'Erreur serveur' };
+            return { success: false, error: 'Erreur serveur lors de l\'envoi de l\'email' };
         }
     }
 
@@ -274,19 +269,22 @@ class AuthModule {
      */
     async resetPassword(newPassword) {
         try {
-            // const { error } = await this.supabase.auth.updateUser({
-            //     password: newPassword
-            // });
+            if (!this.authService) {
+                return { success: false, error: 'Service d\'authentification non disponible' };
+            }
 
-            // if (error) {
-            //     console.error('Erreur lors de la réinitialisation du mot de passe:', error);
-            //     return { success: false, error: this.translateAuthError(error.message) };
-            // }
+            const { success, error } = await this.authService.resetPassword(newPassword);
+            
+            if (!success) {
+                console.error('Erreur lors de la réinitialisation du mot de passe:', error);
+                return { success: false, error: 'Erreur lors de la réinitialisation du mot de passe' };
+            }
 
             return { success: true };
+
         } catch (error) {
             console.error('Erreur lors de la réinitialisation du mot de passe:', error);
-            return { success: false, error: 'Erreur serveur' };
+            return { success: false, error: 'Erreur serveur lors de la réinitialisation' };
         }
     }
 
@@ -295,22 +293,22 @@ class AuthModule {
      */
     async socialLogin(provider) {
         try {
-            // const { data, error } = await this.supabase.auth.signInWithOAuth({
-            //     provider: provider,
-            //     options: {
-            //         redirectTo: `${window.location.origin}/auth/callback.html`
-            //     }
-            // });
+            if (!this.authService) {
+                return { success: false, error: 'Service d\'authentification non disponible' };
+            }
 
-            // if (error) {
-            //     console.error('Erreur lors de la connexion sociale:', error);
-            //     return { success: false, error: this.translateAuthError(error.message) };
-            // }
+            const { success, data, error } = await this.authService.signInWithOAuth(provider);
+            
+            if (!success) {
+                console.error('Erreur lors de la connexion sociale:', error);
+                return { success: false, error: 'Erreur lors de la connexion sociale' };
+            }
 
-            return { success: true, data: {} };
+            return { success: true, data };
+
         } catch (error) {
             console.error('Erreur lors de la connexion sociale:', error);
-            return { success: false, error: 'Erreur serveur' };
+            return { success: false, error: 'Erreur serveur lors de la connexion sociale' };
         }
     }
 
@@ -339,46 +337,41 @@ class AuthModule {
      * Mettre à jour le profil utilisateur
      */
     async updateProfile(profileData) {
-        if (!this.currentUser) {
-            return { success: false, error: 'Utilisateur non connecté' };
-        }
-
         try {
-            // const { error } = await this.supabase
-            //     .from('profiles')
-            //     .update(profileData)
-            //     .eq('id', this.currentUser.id);
+            if (!this.currentUser || !this.databaseService) {
+                return { success: false, error: 'Utilisateur non connecté ou service non disponible' };
+            }
 
-            // if (error) {
-            //     console.error('Erreur lors de la mise à jour du profil:', error);
-            //     return { success: false, error: 'Erreur lors de la mise à jour du profil' };
-            // }
+            const { success, error } = await this.databaseService.updateUserProfile(this.currentUser.id, profileData);
+            
+            if (!success) {
+                console.error('Erreur lors de la mise à jour du profil:', error);
+                return { success: false, error: 'Erreur lors de la mise à jour du profil' };
+            }
 
             // Recharger le profil
             await this.loadUserProfile();
 
-            return { success: true, profile: this.currentProfile };
+            return { success: true };
+
         } catch (error) {
             console.error('Erreur lors de la mise à jour du profil:', error);
-            return { success: false, error: 'Erreur serveur' };
+            return { success: false, error: 'Erreur serveur lors de la mise à jour' };
         }
     }
 
     /**
-     * Validation des données d'inscription
+     * Valider les données d'inscription
      */
     validateRegistrationData(data) {
-        // Email
         if (!data.email || !this.isValidEmail(data.email)) {
             return { isValid: false, error: 'Adresse email invalide' };
         }
 
-        // Mot de passe
         if (!data.mot_de_passe || data.mot_de_passe.length < 6) {
             return { isValid: false, error: 'Le mot de passe doit contenir au moins 6 caractères' };
         }
 
-        // Nom et prénom
         if (!data.nom || data.nom.trim().length < 2) {
             return { isValid: false, error: 'Le nom doit contenir au moins 2 caractères' };
         }
@@ -387,7 +380,6 @@ class AuthModule {
             return { isValid: false, error: 'Le prénom doit contenir au moins 2 caractères' };
         }
 
-        // Téléphone (optionnel mais validé si fourni)
         if (data.telephone && !this.isValidPhone(data.telephone)) {
             return { isValid: false, error: 'Numéro de téléphone invalide' };
         }
@@ -396,7 +388,7 @@ class AuthModule {
     }
 
     /**
-     * Validation d'email
+     * Valider un email
      */
     isValidEmail(email) {
         const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
@@ -404,7 +396,7 @@ class AuthModule {
     }
 
     /**
-     * Validation de téléphone
+     * Valider un numéro de téléphone
      */
     isValidPhone(phone) {
         const phoneRegex = /^[\+]?[0-9\s\-\(\)]{8,15}$/;
@@ -417,56 +409,61 @@ class AuthModule {
     translateAuthError(errorMessage) {
         const errorTranslations = {
             'Invalid login credentials': 'Email ou mot de passe incorrect',
-            'Email not confirmed': 'Veuillez confirmer votre email avant de vous connecter',
-            'User already registered': 'Un compte existe déjà avec cette adresse email',
+            'Email not confirmed': 'Email non confirmé. Vérifiez votre boîte de réception.',
+            'User already registered': 'Un compte existe déjà avec cet email',
             'Password should be at least 6 characters': 'Le mot de passe doit contenir au moins 6 caractères',
             'Unable to validate email address: invalid format': 'Format d\'email invalide',
             'Signup is disabled': 'L\'inscription est temporairement désactivée',
-            'Too many requests': 'Trop de tentatives. Veuillez réessayer plus tard',
-            'User not found': 'Aucun compte trouvé avec cette adresse email',
-            'Email rate limit exceeded': 'Trop de demandes d\'email. Veuillez réessayer plus tard'
+            'User not found': 'Utilisateur non trouvé',
+            'Too many requests': 'Trop de tentatives. Veuillez réessayer plus tard.'
         };
 
-        return errorTranslations[errorMessage] || errorMessage;
+        return errorTranslations[errorMessage] || errorMessage || 'Une erreur est survenue';
     }
 
     /**
      * Envoyer un événement d'authentification
      */
     dispatchAuthEvent(type, data = null) {
-        const event = new CustomEvent('authStateChanged', {
+        const event = new CustomEvent('authStateChange', {
             detail: { type, data, user: this.currentUser, profile: this.currentProfile }
         });
         document.dispatchEvent(event);
     }
 
     /**
-     * Vérifier le statut de confirmation de l'email
+     * Vérifier la confirmation d'email
      */
     async checkEmailConfirmation() {
-        if (!this.currentUser) {
-            return { confirmed: false, error: 'Utilisateur non connecté' };
-        }
-
         try {
-            // const { data: { user }, error } = await this.supabase.auth.getUser();
-            
-            // if (error) {
-            //     return { confirmed: false, error: 'Erreur lors de la vérification' };
-            // }
+            if (!this.currentUser) {
+                return { success: false, error: 'Aucun utilisateur connecté' };
+            }
 
-            return { 
-                confirmed: !!this.currentUser.email_confirmed_at,
-                confirmedAt: this.currentUser.email_confirmed_at 
-            };
+            // Vérifier si l'email est confirmé
+            if (this.currentUser.email_confirmed_at) {
+                return { success: true, confirmed: true };
+            }
+
+            // Vérifier la session actuelle
+            if (this.authService) {
+                const { success, user } = await this.authService.getUser();
+                if (success && user && user.email_confirmed_at) {
+                    this.currentUser = user;
+                    return { success: true, confirmed: true };
+                }
+            }
+
+            return { success: true, confirmed: false };
+
         } catch (error) {
-            console.error('Erreur lors de la vérification de confirmation:', error);
-            return { confirmed: false, error: 'Erreur serveur' };
+            console.error('Erreur lors de la vérification de l\'email:', error);
+            return { success: false, error: 'Erreur lors de la vérification' };
         }
     }
 
     /**
-     * Obtenir les informations de session
+     * Obtenir la session actuelle
      */
     getSession() {
         return this.session;
@@ -477,40 +474,55 @@ class AuthModule {
      */
     async refreshSession() {
         try {
-            // const { data, error } = await this.supabase.auth.refreshSession();
-            
-            // if (error) {
-            //     console.error('Erreur lors du rafraîchissement de session:', error);
-            //     return { success: false, error };
-            // }
+            if (!this.authService) {
+                return { success: false, error: 'Service d\'authentification non disponible' };
+            }
 
-            return { success: true, session: this.session };
+            const { success, session } = await this.authService.getSession();
+            
+            if (success && session) {
+                this.session = session;
+                return { success: true, session };
+            }
+
+            return { success: false, error: 'Aucune session valide' };
+
         } catch (error) {
-            console.error('Erreur lors du rafraîchissement de session:', error);
-            return { success: false, error };
+            console.error('Erreur lors du rafraîchissement de la session:', error);
+            return { success: false, error: 'Erreur lors du rafraîchissement' };
         }
     }
 
     /**
-     * Désactiver le compte utilisateur
+     * Désactiver le compte
      */
     async deactivateAccount() {
-        if (!this.currentUser) return { success: false, error: 'Utilisateur non connecté' };
-        // const { error } = await this.supabase
-        //     .from('profiles')
-        //     .update({ is_active: false })
-        //     .eq('id', this.currentUser.id);
-        // if (error) {
-        //     return { success: false, error: error.message };
-        // }
-        // await this.supabase.auth.signOut();
-        return { success: true };
+        try {
+            if (!this.currentUser || !this.databaseService) {
+                return { success: false, error: 'Utilisateur non connecté ou service non disponible' };
+            }
+
+            // Mettre à jour le profil pour désactiver le compte
+            const { success, error } = await this.databaseService.updateUserProfile(this.currentUser.id, {
+                is_active: false
+            });
+
+            if (!success) {
+                console.error('Erreur lors de la désactivation du compte:', error);
+                return { success: false, error: 'Erreur lors de la désactivation du compte' };
+            }
+
+            // Déconnecter l'utilisateur
+            await this.logout();
+
+            return { success: true };
+
+        } catch (error) {
+            console.error('Erreur lors de la désactivation du compte:', error);
+            return { success: false, error: 'Erreur serveur lors de la désactivation' };
+        }
     }
 }
 
 // Exporter le module
-if (typeof module !== 'undefined' && module.exports) {
-    module.exports = AuthModule;
-} else {
-    window.AuthModule = AuthModule;
-} 
+window.AuthModule = AuthModule; 

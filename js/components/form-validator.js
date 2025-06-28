@@ -196,7 +196,13 @@ class FormValidator {
     }
 
     isValidEmail(email) {
-        return CONFIG.VALIDATIONS.EMAIL.test(email);
+        // Vérifier si CONFIG est disponible, sinon utiliser une regex par défaut
+        if (typeof CONFIG !== 'undefined' && CONFIG.VALIDATIONS && CONFIG.VALIDATIONS.EMAIL) {
+            return CONFIG.VALIDATIONS.EMAIL.test(email);
+        }
+        // Regex par défaut pour validation email
+        const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+        return emailRegex.test(email);
     }
 
     isValidPhone(phone) {
@@ -204,7 +210,13 @@ class FormValidator {
         if (!phone || phone.trim() === '') {
             return true;
         }
-        return CONFIG.VALIDATIONS.PHONE.test(phone);
+        // Vérifier si CONFIG est disponible, sinon utiliser une regex par défaut
+        if (typeof CONFIG !== 'undefined' && CONFIG.VALIDATIONS && CONFIG.VALIDATIONS.PHONE) {
+            return CONFIG.VALIDATIONS.PHONE.test(phone);
+        }
+        // Regex par défaut pour validation téléphone
+        const phoneRegex = /^[\+]?[0-9\s\-\(\)]{8,15}$/;
+        return phoneRegex.test(phone);
     }
 
     getErrorMessage(fieldName, type, param = null) {

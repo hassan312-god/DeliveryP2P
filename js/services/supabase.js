@@ -1,18 +1,31 @@
-<<<<<<< HEAD
-import { createClient } from '@supabase/supabase-js';
-
-// Supabase désactivé côté front-end. Toute l'authentification passe par le backend Render.
+// Import conditionnel de Supabase
+let createClient;
+if (typeof window !== 'undefined' && window.supabase) {
+    // Si Supabase est déjà chargé globalement
+    createClient = window.supabase.createClient;
+} else if (typeof require !== 'undefined') {
+    // Node.js
+    const { createClient: supabaseCreateClient } = require('@supabase/supabase-js');
+    createClient = supabaseCreateClient;
+} else {
+    // Fallback pour navigateur - charger depuis CDN
+    console.warn('Supabase client non trouvé. Assurez-vous que la bibliothèque est chargée.');
+    createClient = function(url, key, options) {
+        console.error('Supabase client non disponible');
+        return null;
+    };
+}
 
 /**
  * Service Supabase pour LivraisonP2P
  * Gère la connexion à Supabase et les opérations de base
  */
 
-// Configuration Supabase
+// Configuration Supabase depuis config.js
 const SUPABASE_CONFIG = {
-    url: window.SUPABASE_URL || 'https://your-project.supabase.co',
-    anonKey: window.SUPABASE_ANON_KEY || 'your-anon-key',
-    serviceRoleKey: window.SUPABASE_SERVICE_ROLE_KEY || 'your-service-role-key'
+    url: window.CONFIG?.SUPABASE?.URL || 'https://syamapjohtlbjlyhlhsi.supabase.co',
+    anonKey: window.CONFIG?.SUPABASE?.ANON_KEY || 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InN5YW1hcGpvaHRsYmpseWhsaHNpIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTAzNzAxNjksImV4cCI6MjA2NTk0NjE2OX0._Sl5uiiUKK58wPa-lJG-TPe7K9rdem6Uc2V4epyhx_M',
+    serviceRoleKey: window.CONFIG?.SUPABASE?.SERVICE_KEY || ''
 };
 
 // Initialisation du client Supabase
@@ -73,16 +86,6 @@ function setupAuthListeners() {
             detail: { event, session }
         });
         document.dispatchEvent(authEvent);
-    });
-
-    // Écouter les erreurs d'authentification
-    supabaseClient.auth.onError((error) => {
-        console.error('Erreur d\'authentification Supabase:', error);
-        
-        const errorEvent = new CustomEvent('supabaseAuthError', {
-            detail: { error }
-        });
-        document.dispatchEvent(errorEvent);
     });
 }
 
@@ -190,19 +193,19 @@ class SupabaseAuthService {
             });
 
             if (error) {
-                console.error('Erreur connexion sociale Supabase:', error);
+                console.error('Erreur connexion OAuth:', error);
                 return { success: false, error };
             }
 
             return { success: true, data };
         } catch (error) {
-            console.error('Erreur connexion sociale:', error);
+            console.error('Erreur connexion OAuth:', error);
             return { success: false, error };
         }
     }
 
     /**
-     * Envoyer email de confirmation
+     * Renvoyer l'email de confirmation
      */
     async resendConfirmationEmail(email) {
         try {
@@ -215,19 +218,19 @@ class SupabaseAuthService {
             });
 
             if (error) {
-                console.error('Erreur envoi email confirmation Supabase:', error);
+                console.error('Erreur renvoi email confirmation:', error);
                 return { success: false, error };
             }
 
             return { success: true };
         } catch (error) {
-            console.error('Erreur envoi email confirmation:', error);
+            console.error('Erreur renvoi email confirmation:', error);
             return { success: false, error };
         }
     }
 
     /**
-     * Envoyer email de réinitialisation
+     * Envoyer l'email de réinitialisation de mot de passe
      */
     async sendPasswordResetEmail(email) {
         try {
@@ -236,13 +239,13 @@ class SupabaseAuthService {
             });
 
             if (error) {
-                console.error('Erreur envoi email réinitialisation Supabase:', error);
+                console.error('Erreur envoi email reset:', error);
                 return { success: false, error };
             }
 
             return { success: true };
         } catch (error) {
-            console.error('Erreur envoi email réinitialisation:', error);
+            console.error('Erreur envoi email reset:', error);
             return { success: false, error };
         }
     }
@@ -257,29 +260,29 @@ class SupabaseAuthService {
             });
 
             if (error) {
-                console.error('Erreur réinitialisation mot de passe Supabase:', error);
+                console.error('Erreur reset password:', error);
                 return { success: false, error };
             }
 
             return { success: true };
         } catch (error) {
-            console.error('Erreur réinitialisation mot de passe:', error);
+            console.error('Erreur reset password:', error);
             return { success: false, error };
         }
     }
 
     /**
-     * Vérifier le token OTP
+     * Vérifier un OTP
      */
     async verifyOtp(token, type) {
         try {
             const { data, error } = await this.client.auth.verifyOtp({
-                token_hash: token,
-                type: type
+                token,
+                type
             });
 
             if (error) {
-                console.error('Erreur vérification OTP Supabase:', error);
+                console.error('Erreur vérification OTP:', error);
                 return { success: false, error };
             }
 
@@ -295,14 +298,14 @@ class SupabaseAuthService {
      */
     async getSession() {
         try {
-            const { data, error } = await this.client.auth.getSession();
+            const { data: { session }, error } = await this.client.auth.getSession();
             
             if (error) {
-                console.error('Erreur récupération session Supabase:', error);
+                console.error('Erreur récupération session:', error);
                 return { success: false, error };
             }
 
-            return { success: true, data };
+            return { success: true, session };
         } catch (error) {
             console.error('Erreur récupération session:', error);
             return { success: false, error };
@@ -314,14 +317,14 @@ class SupabaseAuthService {
      */
     async getUser() {
         try {
-            const { data, error } = await this.client.auth.getUser();
+            const { data: { user }, error } = await this.client.auth.getUser();
             
             if (error) {
-                console.error('Erreur récupération utilisateur Supabase:', error);
+                console.error('Erreur récupération utilisateur:', error);
                 return { success: false, error };
             }
 
-            return { success: true, data };
+            return { success: true, user };
         } catch (error) {
             console.error('Erreur récupération utilisateur:', error);
             return { success: false, error };
@@ -336,25 +339,31 @@ class SupabaseAuthService {
             const profileData = {
                 id: user.id,
                 email: user.email,
-                nom: userData.nom || user.user_metadata?.nom || 'Utilisateur',
-                prenom: userData.prenom || user.user_metadata?.prenom || 'Nouveau',
+                nom: userData.nom || user.user_metadata?.nom || '',
+                prenom: userData.prenom || user.user_metadata?.prenom || '',
                 telephone: userData.telephone || user.user_metadata?.telephone || null,
-                role: userData.role || 'client',
-                date_inscription: new Date().toISOString(),
-                statut: 'en_attente_confirmation',
+                role: userData.role || user.user_metadata?.role || 'client',
                 email_confirme: false,
-                provider: user.app_metadata?.provider || 'email'
+                is_active: true,
+                created_at: new Date().toISOString(),
+                updated_at: new Date().toISOString()
             };
+
+            console.log('Tentative de création du profil avec les données:', profileData);
 
             const { error } = await this.client
                 .from('profiles')
                 .insert([profileData]);
 
             if (error) {
-                console.error('Erreur création profil Supabase:', error);
+                console.error('Erreur création profil:', error);
+                console.error('Détails de l\'erreur:', error.message);
+                console.error('Code d\'erreur:', error.code);
+                console.error('Détails:', error.details);
                 return { success: false, error };
             }
 
+            console.log('Profil créé avec succès');
             return { success: true };
         } catch (error) {
             console.error('Erreur création profil:', error);
@@ -369,11 +378,14 @@ class SupabaseAuthService {
         try {
             const { error } = await this.client
                 .from('profiles')
-                .update(profileData)
+                .update({
+                    ...profileData,
+                    updated_at: new Date().toISOString()
+                })
                 .eq('id', userId);
 
             if (error) {
-                console.error('Erreur mise à jour profil Supabase:', error);
+                console.error('Erreur mise à jour profil:', error);
                 return { success: false, error };
             }
 
@@ -396,11 +408,11 @@ class SupabaseAuthService {
                 .single();
 
             if (error) {
-                console.error('Erreur récupération profil Supabase:', error);
+                console.error('Erreur récupération profil:', error);
                 return { success: false, error };
             }
 
-            return { success: true, data };
+            return { success: true, profile: data };
         } catch (error) {
             console.error('Erreur récupération profil:', error);
             return { success: false, error };
@@ -417,7 +429,7 @@ class SupabaseDatabaseService {
     }
 
     /**
-     * Exécuter une requête SQL
+     * Exécuter une requête SQL personnalisée
      */
     async executeQuery(query, params = []) {
         try {
@@ -427,7 +439,7 @@ class SupabaseDatabaseService {
             });
 
             if (error) {
-                console.error('Erreur exécution requête Supabase:', error);
+                console.error('Erreur exécution requête:', error);
                 return { success: false, error };
             }
 
@@ -449,13 +461,13 @@ class SupabaseDatabaseService {
                 .select();
 
             if (error) {
-                console.error(`Erreur insertion ${table} Supabase:`, error);
+                console.error('Erreur insertion:', error);
                 return { success: false, error };
             }
 
             return { success: true, data: result };
         } catch (error) {
-            console.error(`Erreur insertion ${table}:`, error);
+            console.error('Erreur insertion:', error);
             return { success: false, error };
         }
     }
@@ -475,13 +487,13 @@ class SupabaseDatabaseService {
             const { data: result, error } = await query.select();
 
             if (error) {
-                console.error(`Erreur mise à jour ${table} Supabase:`, error);
+                console.error('Erreur mise à jour:', error);
                 return { success: false, error };
             }
 
             return { success: true, data: result };
         } catch (error) {
-            console.error(`Erreur mise à jour ${table}:`, error);
+            console.error('Erreur mise à jour:', error);
             return { success: false, error };
         }
     }
@@ -498,16 +510,16 @@ class SupabaseDatabaseService {
                 query = query.eq(key, conditions[key]);
             });
 
-            const { error } = await query;
+            const { data: result, error } = await query.select();
 
             if (error) {
-                console.error(`Erreur suppression ${table} Supabase:`, error);
+                console.error('Erreur suppression:', error);
                 return { success: false, error };
             }
 
-            return { success: true };
+            return { success: true, data: result };
         } catch (error) {
-            console.error(`Erreur suppression ${table}:`, error);
+            console.error('Erreur suppression:', error);
             return { success: false, error };
         }
     }
@@ -527,40 +539,25 @@ class SupabaseDatabaseService {
             const { data, error } = await query;
 
             if (error) {
-                console.error(`Erreur sélection ${table} Supabase:`, error);
+                console.error('Erreur sélection:', error);
                 return { success: false, error };
             }
 
             return { success: true, data };
         } catch (error) {
-            console.error(`Erreur sélection ${table}:`, error);
+            console.error('Erreur sélection:', error);
             return { success: false, error };
         }
     }
 }
 
-// Initialisation automatique
-document.addEventListener('DOMContentLoaded', function() {
-    initializeSupabase();
-});
-
 // Exporter les services
-window.supabaseClient = getSupabaseClient();
 window.SupabaseAuthService = SupabaseAuthService;
 window.SupabaseDatabaseService = SupabaseDatabaseService;
+window.getSupabaseClient = getSupabaseClient;
+window.initializeSupabase = initializeSupabase;
 
-// Export pour Node.js
-if (typeof module !== 'undefined' && module.exports) {
-    module.exports = {
-        initializeSupabase,
-        getSupabaseClient,
-        SupabaseAuthService,
-        SupabaseDatabaseService
-    };
-} 
-=======
-// Supabase désactivé côté front-end. Toute l'authentification et les opérations passent par le backend Render.
-// import { createClient } from '@supabase/supabase-js';
-// const supabase = createClient('https://...supabase.co', 'public-anon-key');
-// export default supabase;
->>>>>>> a4a40615c69d06d75887da42bf47e9e0a471748f
+// Initialiser automatiquement
+document.addEventListener('DOMContentLoaded', () => {
+    initializeSupabase();
+});

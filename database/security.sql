@@ -469,4 +469,150 @@ CREATE POLICY "Admins can delete all QR codes" ON qr_codes
             WHERE profiles.id = auth.uid() 
             AND profiles.role = 'admin'
         )
-    ); 
+    );
+
+-- =====================================================
+-- POLICIES RLS (Row Level Security) POUR SUPABASE
+-- =====================================================
+
+-- Activer RLS sur la table profiles
+ALTER TABLE profiles ENABLE ROW LEVEL SECURITY;
+
+-- Policy pour permettre à l'utilisateur d'insérer son propre profil
+CREATE POLICY "Allow user to insert own profile"
+ON profiles
+FOR INSERT
+WITH CHECK (auth.uid() = id);
+
+-- Policy pour permettre à l'utilisateur de voir son propre profil
+CREATE POLICY "Allow user to view own profile"
+ON profiles
+FOR SELECT
+USING (auth.uid() = id);
+
+-- Policy pour permettre à l'utilisateur de modifier son propre profil
+CREATE POLICY "Allow user to update own profile"
+ON profiles
+FOR UPDATE
+USING (auth.uid() = id);
+
+-- Policy pour permettre aux admins de voir tous les profils
+CREATE POLICY "Allow admins to view all profiles"
+ON profiles
+FOR SELECT
+USING (
+    EXISTS (
+        SELECT 1 FROM profiles 
+        WHERE id = auth.uid() 
+        AND role = 'admin'
+    )
+);
+
+-- Policy pour permettre aux admins de modifier tous les profils
+CREATE POLICY "Allow admins to update all profiles"
+ON profiles
+FOR UPDATE
+USING (
+    EXISTS (
+        SELECT 1 FROM profiles 
+        WHERE id = auth.uid() 
+        AND role = 'admin'
+    )
+);
+
+-- Activer RLS sur les autres tables
+ALTER TABLE email_queue ENABLE ROW LEVEL SECURITY;
+ALTER TABLE livraisons ENABLE ROW LEVEL SECURITY;
+ALTER TABLE paiements ENABLE ROW LEVEL SECURITY;
+ALTER TABLE notifications ENABLE ROW LEVEL SECURITY;
+ALTER TABLE messages ENABLE ROW LEVEL SECURITY;
+ALTER TABLE evaluations ENABLE ROW LEVEL SECURITY;
+ALTER TABLE user_locations ENABLE ROW LEVEL SECURITY;
+ALTER TABLE qr_codes ENABLE ROW LEVEL SECURITY;
+ALTER TABLE user_sessions ENABLE ROW LEVEL SECURITY;
+ALTER TABLE activity_logs ENABLE ROW LEVEL SECURITY;
+
+-- Policies pour email_queue
+CREATE POLICY "Allow user to view own emails"
+ON email_queue FOR SELECT
+USING (user_id = auth.uid());
+
+CREATE POLICY "Allow user to insert own emails"
+ON email_queue FOR INSERT
+WITH CHECK (user_id = auth.uid());
+
+-- Policies pour notifications
+CREATE POLICY "Allow user to view own notifications"
+ON notifications FOR SELECT
+USING (user_id = auth.uid());
+
+CREATE POLICY "Allow user to update own notifications"
+ON notifications FOR UPDATE
+USING (user_id = auth.uid());
+
+-- Policies pour user_locations
+CREATE POLICY "Allow user to view own locations"
+ON user_locations FOR SELECT
+USING (user_id = auth.uid());
+
+CREATE POLICY "Allow user to insert own locations"
+ON user_locations FOR INSERT
+WITH CHECK (user_id = auth.uid());
+
+-- Policies pour qr_codes
+CREATE POLICY "Allow user to view own qr codes"
+ON qr_codes FOR SELECT
+USING (user_id = auth.uid());
+
+CREATE POLICY "Allow user to insert own qr codes"
+ON qr_codes FOR INSERT
+WITH CHECK (user_id = auth.uid());
+
+-- Policies pour user_sessions
+CREATE POLICY "Allow user to view own sessions"
+ON user_sessions FOR SELECT
+USING (user_id = auth.uid());
+
+CREATE POLICY "Allow user to insert own sessions"
+ON user_sessions FOR INSERT
+WITH CHECK (user_id = auth.uid());
+
+-- Policies pour activity_logs
+CREATE POLICY "Allow user to view own activity logs"
+ON activity_logs FOR SELECT
+USING (user_id = auth.uid());
+
+CREATE POLICY "Allow user to insert own activity logs"
+ON activity_logs FOR INSERT
+WITH CHECK (user_id = auth.uid());
+
+-- Policies pour livraisons (plus complexes)
+CREATE POLICY "Allow user to view own deliveries"
+ON livraisons FOR SELECT
+USING (client_id = auth.uid() OR livreur_id = auth.uid());
+
+CREATE POLICY "Allow user to insert own deliveries"
+ON livraisons FOR INSERT
+WITH CHECK (client_id = auth.uid());
+
+CREATE POLICY "Allow user to update own deliveries"
+ON livraisons FOR UPDATE
+USING (client_id = auth.uid() OR livreur_id = auth.uid());
+
+-- Policies pour messages
+CREATE POLICY "Allow user to view related messages"
+ON messages FOR SELECT
+USING (expediteur_id = auth.uid() OR destinataire_id = auth.uid());
+
+CREATE POLICY "Allow user to insert own messages"
+ON messages FOR INSERT
+WITH CHECK (expediteur_id = auth.uid());
+
+-- Policies pour evaluations
+CREATE POLICY "Allow user to view related evaluations"
+ON evaluations FOR SELECT
+USING (evaluateur_id = auth.uid() OR evalue_id = auth.uid());
+
+CREATE POLICY "Allow user to insert own evaluations"
+ON evaluations FOR INSERT
+WITH CHECK (evaluateur_id = auth.uid()); 

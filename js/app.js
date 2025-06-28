@@ -8,13 +8,34 @@ class LivraisonP2PApp {
         this.currentUser = null;
         this.currentProfile = null;
         this.isInitialized = false;
-        this.theme = ConfigUtils.getCurrentTheme();
+        this.theme = this.getCurrentTheme();
         this.language = localStorage.getItem('language') || 'fr';
         this.notifications = [];
         this.offlineQueue = [];
         this.isOnline = navigator.onLine;
         
         this.init();
+    }
+
+    /**
+     * Obtenir le thème actuel avec fallback
+     */
+    getCurrentTheme() {
+        if (typeof ConfigUtils !== 'undefined' && ConfigUtils.getCurrentTheme) {
+            return ConfigUtils.getCurrentTheme();
+        }
+        return localStorage.getItem('theme') || 'light';
+    }
+
+    /**
+     * Logger avec fallback
+     */
+    log(level, message, data = {}) {
+        if (typeof ConfigUtils !== 'undefined' && ConfigUtils.log) {
+            ConfigUtils.log(level, message, data);
+        } else {
+            console.log(`[${level.toUpperCase()}] ${message}`, data);
+        }
     }
 
     /**
@@ -42,7 +63,7 @@ class LivraisonP2PApp {
             this.startBackgroundServices();
             
             this.isInitialized = true;
-            ConfigUtils.log('info', 'Application initialisée avec succès');
+            this.log('info', 'Application initialisée avec succès');
             
             // Émettre l'événement d'initialisation
             this.emit('app:initialized');
@@ -131,7 +152,12 @@ class LivraisonP2PApp {
      * Configurer le thème
      */
     setupTheme() {
-        ConfigUtils.setTheme(this.theme);
+        if (typeof ConfigUtils !== 'undefined' && ConfigUtils.setTheme) {
+            ConfigUtils.setTheme(this.theme);
+        } else {
+            // Fallback simple pour le thème
+            document.body.setAttribute('data-theme', this.theme);
+        }
         document.body.classList.add(`theme-${this.theme}`);
     }
 
@@ -155,7 +181,7 @@ class LivraisonP2PApp {
                 this.currentProfile = response.data.profile;
                 this.updateAuthUI();
                 this.loadNotifications();
-                ConfigUtils.log('info', 'Utilisateur authentifié', { userId: this.currentUser.id });
+                this.log('info', 'Utilisateur authentifié', { userId: this.currentUser.id });
             } else {
                 this.currentUser = null;
                 this.currentProfile = null;
@@ -683,8 +709,7 @@ class LivraisonP2PApp {
     handleThemeChange(event) {
         const newTheme = event.detail.theme;
         this.theme = newTheme;
-        ConfigUtils.setTheme(newTheme);
-        localStorage.setItem('theme', newTheme);
+        this.setupTheme();
     }
 
     /**

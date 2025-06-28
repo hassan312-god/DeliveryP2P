@@ -1,0 +1,456 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Test Authentification Supabase - LivraisonP2P</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 800px;
+            margin: 50px auto;
+            padding: 20px;
+            background: #f5f5f5;
+        }
+        .test-container {
+            background: white;
+            padding: 30px;
+            border-radius: 10px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+        .test-section {
+            margin-bottom: 30px;
+            padding: 20px;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+        }
+        .form-group {
+            margin-bottom: 15px;
+        }
+        label {
+            display: block;
+            margin-bottom: 5px;
+            font-weight: bold;
+        }
+        input, select {
+            width: 100%;
+            padding: 10px;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+            font-size: 16px;
+        }
+        button {
+            background: #3B82F6;
+            color: white;
+            padding: 12px 24px;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 16px;
+            margin-right: 10px;
+        }
+        button:hover {
+            background: #2563EB;
+        }
+        button:disabled {
+            background: #ccc;
+            cursor: not-allowed;
+        }
+        .result {
+            margin-top: 15px;
+            padding: 15px;
+            border-radius: 5px;
+            white-space: pre-wrap;
+        }
+        .success {
+            background: #D1FAE5;
+            color: #065F46;
+            border: 1px solid #10B981;
+        }
+        .error {
+            background: #FEE2E2;
+            color: #991B1B;
+            border: 1px solid #EF4444;
+        }
+        .info {
+            background: #D1ECF1;
+            color: #0c5460;
+            border: 1px solid #17a2b8;
+        }
+        .warning {
+            background: #FFF3CD;
+            color: #856404;
+            border: 1px solid #FFC107;
+        }
+        .log {
+            background: #f8f9fa;
+            border: 1px solid #dee2e6;
+            color: #495057;
+            font-family: monospace;
+            font-size: 12px;
+            max-height: 200px;
+            overflow-y: auto;
+        }
+    </style>
+</head>
+<body>
+    <div class="test-container">
+        <h1>🧪 Test Authentification Supabase</h1>
+        <p>Testez l'inscription, la connexion et l'envoi d'emails de confirmation</p>
+        
+        <!-- Test 1: Configuration -->
+        <div class="test-section">
+            <h2>1. Configuration Supabase</h2>
+            <button onclick="testConfiguration()">Tester la Configuration</button>
+            <div id="configResult"></div>
+        </div>
+
+        <!-- Test 2: Inscription -->
+        <div class="test-section">
+            <h2>2. Test d'Inscription</h2>
+            <form id="signupForm">
+                <div class="form-group">
+                    <label for="signupEmail">Email:</label>
+                    <input type="email" id="signupEmail" placeholder="test@example.com" required>
+                </div>
+                <div class="form-group">
+                    <label for="signupPassword">Mot de passe:</label>
+                    <input type="password" id="signupPassword" placeholder="Mot de passe" required>
+                </div>
+                <div class="form-group">
+                    <label for="signupNom">Nom:</label>
+                    <input type="text" id="signupNom" placeholder="Nom" required>
+                </div>
+                <div class="form-group">
+                    <label for="signupPrenom">Prénom:</label>
+                    <input type="text" id="signupPrenom" placeholder="Prénom" required>
+                </div>
+                <div class="form-group">
+                    <label for="signupRole">Rôle:</label>
+                    <select id="signupRole">
+                        <option value="client">Client</option>
+                        <option value="livreur">Livreur</option>
+                    </select>
+                </div>
+                <button type="submit">S'inscrire</button>
+            </form>
+            <div id="signupResult"></div>
+        </div>
+
+        <!-- Test 3: Connexion -->
+        <div class="test-section">
+            <h2>3. Test de Connexion</h2>
+            <form id="loginForm">
+                <div class="form-group">
+                    <label for="loginEmail">Email:</label>
+                    <input type="email" id="loginEmail" placeholder="email@example.com" required>
+                </div>
+                <div class="form-group">
+                    <label for="loginPassword">Mot de passe:</label>
+                    <input type="password" id="loginPassword" placeholder="Mot de passe" required>
+                </div>
+                <button type="submit">Se connecter</button>
+            </form>
+            <div id="loginResult"></div>
+        </div>
+
+        <!-- Test 4: Réinitialisation de mot de passe -->
+        <div class="test-section">
+            <h2>4. Test Réinitialisation Mot de Passe</h2>
+            <form id="resetForm">
+                <div class="form-group">
+                    <label for="resetEmail">Email:</label>
+                    <input type="email" id="resetEmail" placeholder="email@example.com" required>
+                </div>
+                <button type="submit">Envoyer email de réinitialisation</button>
+            </form>
+            <div id="resetResult"></div>
+        </div>
+
+        <!-- Test 5: État de l'authentification -->
+        <div class="test-section">
+            <h2>5. État de l'Authentification</h2>
+            <button onclick="checkAuthState()">Vérifier l'état</button>
+            <button onclick="logout()">Se déconnecter</button>
+            <div id="authStateResult"></div>
+        </div>
+
+        <!-- Logs -->
+        <div class="test-section">
+            <h2>📋 Logs</h2>
+            <div id="logs" class="log"></div>
+        </div>
+    </div>
+
+    <!-- CDN Supabase -->
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <script src="config.js"></script>
+    <script src="js/services/supabase.js"></script>
+    
+    <script>
+        let supabaseClient = null;
+        let currentUser = null;
+
+        // Fonction pour ajouter des logs
+        function addLog(message, type = 'info') {
+            const logs = document.getElementById('logs');
+            const timestamp = new Date().toLocaleTimeString();
+            const logEntry = document.createElement('div');
+            logEntry.innerHTML = `<span style="color: #666;">[${timestamp}]</span> ${message}`;
+            logs.appendChild(logEntry);
+            logs.scrollTop = logs.scrollHeight;
+        }
+
+        // Fonction pour afficher un résultat
+        function showResult(elementId, message, type = 'info') {
+            const element = document.getElementById(elementId);
+            element.className = `result ${type}`;
+            element.textContent = message;
+            addLog(`${elementId}: ${message}`, type);
+        }
+
+        // Test 1: Configuration
+        async function testConfiguration() {
+            addLog('Test de configuration Supabase...');
+            
+            try {
+                // Vérifier si Supabase est chargé
+                if (typeof window.supabase === 'undefined') {
+                    showResult('configResult', '❌ Supabase CDN non chargé', 'error');
+                    return;
+                }
+
+                // Créer le client
+                supabaseClient = window.supabase.createClient(
+                    CONFIG.SUPABASE.URL,
+                    CONFIG.SUPABASE.ANON_KEY
+                );
+
+                // Tester la connexion
+                const { data, error } = await supabaseClient.from('profiles').select('count').limit(1);
+                
+                if (error) {
+                    showResult('configResult', `❌ Erreur connexion: ${error.message}`, 'error');
+                } else {
+                    showResult('configResult', '✅ Configuration Supabase OK - Connexion réussie', 'success');
+                }
+
+            } catch (error) {
+                showResult('configResult', `❌ Erreur: ${error.message}`, 'error');
+            }
+        }
+
+        // Test 2: Inscription
+        document.getElementById('signupForm').addEventListener('submit', async function(e) {
+            e.preventDefault();
+            
+            const email = document.getElementById('signupEmail').value;
+            const password = document.getElementById('signupPassword').value;
+            const nom = document.getElementById('signupNom').value;
+            const prenom = document.getElementById('signupPrenom').value;
+            const role = document.getElementById('signupRole').value;
+
+            addLog(`Tentative d'inscription pour ${email}...`);
+
+            try {
+                if (!supabaseClient) {
+                    supabaseClient = window.supabase.createClient(
+                        CONFIG.SUPABASE.URL,
+                        CONFIG.SUPABASE.ANON_KEY
+                    );
+                }
+
+                const { data, error } = await supabaseClient.auth.signUp({
+                    email,
+                    password,
+                    options: {
+                        data: {
+                            nom,
+                            prenom,
+                            role
+                        },
+                        emailRedirectTo: `${window.location.origin}/auth/email-confirmation.html`
+                    }
+                });
+
+                if (error) {
+                    showResult('signupResult', `❌ Erreur inscription: ${error.message}`, 'error');
+                } else {
+                    showResult('signupResult', 
+                        `✅ Inscription réussie!\n` +
+                        `User ID: ${data.user.id}\n` +
+                        `Email: ${data.user.email}\n` +
+                        `Email confirmé: ${data.user.email_confirmed_at ? 'Oui' : 'Non'}\n` +
+                        `Un email de confirmation a été envoyé à ${email}`, 
+                        'success'
+                    );
+                }
+
+            } catch (error) {
+                showResult('signupResult', `❌ Erreur: ${error.message}`, 'error');
+            }
+        });
+
+        // Test 3: Connexion
+        document.getElementById('loginForm').addEventListener('submit', async function(e) {
+            e.preventDefault();
+            
+            const email = document.getElementById('loginEmail').value;
+            const password = document.getElementById('loginPassword').value;
+
+            addLog(`Tentative de connexion pour ${email}...`);
+
+            try {
+                if (!supabaseClient) {
+                    supabaseClient = window.supabase.createClient(
+                        CONFIG.SUPABASE.URL,
+                        CONFIG.SUPABASE.ANON_KEY
+                    );
+                }
+
+                const { data, error } = await supabaseClient.auth.signInWithPassword({
+                    email,
+                    password
+                });
+
+                if (error) {
+                    showResult('loginResult', `❌ Erreur connexion: ${error.message}`, 'error');
+                } else {
+                    currentUser = data.user;
+                    showResult('loginResult', 
+                        `✅ Connexion réussie!\n` +
+                        `User ID: ${data.user.id}\n` +
+                        `Email: ${data.user.email}\n` +
+                        `Email confirmé: ${data.user.email_confirmed_at ? 'Oui' : 'Non'}`, 
+                        'success'
+                    );
+                }
+
+            } catch (error) {
+                showResult('loginResult', `❌ Erreur: ${error.message}`, 'error');
+            }
+        });
+
+        // Test 4: Réinitialisation de mot de passe
+        document.getElementById('resetForm').addEventListener('submit', async function(e) {
+            e.preventDefault();
+            
+            const email = document.getElementById('resetEmail').value;
+
+            addLog(`Envoi d'email de réinitialisation pour ${email}...`);
+
+            try {
+                if (!supabaseClient) {
+                    supabaseClient = window.supabase.createClient(
+                        CONFIG.SUPABASE.URL,
+                        CONFIG.SUPABASE.ANON_KEY
+                    );
+                }
+
+                const { error } = await supabaseClient.auth.resetPasswordForEmail(email, {
+                    redirectTo: `${window.location.origin}/auth/reset-password.html`
+                });
+
+                if (error) {
+                    showResult('resetResult', `❌ Erreur: ${error.message}`, 'error');
+                } else {
+                    showResult('resetResult', 
+                        `✅ Email de réinitialisation envoyé!\n` +
+                        `Un email a été envoyé à ${email}`, 
+                        'success'
+                    );
+                }
+
+            } catch (error) {
+                showResult('resetResult', `❌ Erreur: ${error.message}`, 'error');
+            }
+        });
+
+        // Test 5: État de l'authentification
+        async function checkAuthState() {
+            addLog('Vérification de l\'état d\'authentification...');
+
+            try {
+                if (!supabaseClient) {
+                    supabaseClient = window.supabase.createClient(
+                        CONFIG.SUPABASE.URL,
+                        CONFIG.SUPABASE.ANON_KEY
+                    );
+                }
+
+                const { data: { session }, error } = await supabaseClient.auth.getSession();
+                
+                if (error) {
+                    showResult('authStateResult', `❌ Erreur: ${error.message}`, 'error');
+                } else if (session) {
+                    currentUser = session.user;
+                    showResult('authStateResult', 
+                        `✅ Utilisateur connecté!\n` +
+                        `User ID: ${session.user.id}\n` +
+                        `Email: ${session.user.email}\n` +
+                        `Email confirmé: ${session.user.email_confirmed_at ? 'Oui' : 'Non'}\n` +
+                        `Session expirera: ${new Date(session.expires_at * 1000).toLocaleString()}`, 
+                        'success'
+                    );
+                } else {
+                    showResult('authStateResult', 'ℹ️ Aucun utilisateur connecté', 'info');
+                }
+
+            } catch (error) {
+                showResult('authStateResult', `❌ Erreur: ${error.message}`, 'error');
+            }
+        }
+
+        // Déconnexion
+        async function logout() {
+            addLog('Déconnexion...');
+
+            try {
+                if (!supabaseClient) {
+                    supabaseClient = window.supabase.createClient(
+                        CONFIG.SUPABASE.URL,
+                        CONFIG.SUPABASE.ANON_KEY
+                    );
+                }
+
+                const { error } = await supabaseClient.auth.signOut();
+                
+                if (error) {
+                    showResult('authStateResult', `❌ Erreur déconnexion: ${error.message}`, 'error');
+                } else {
+                    currentUser = null;
+                    showResult('authStateResult', '✅ Déconnexion réussie', 'success');
+                }
+
+            } catch (error) {
+                showResult('authStateResult', `❌ Erreur: ${error.message}`, 'error');
+            }
+        }
+
+        // Écouter les changements d'état d'authentification
+        document.addEventListener('DOMContentLoaded', function() {
+            addLog('Page chargée - Initialisation...');
+            
+            // Initialiser le client Supabase
+            if (typeof window.supabase !== 'undefined') {
+                supabaseClient = window.supabase.createClient(
+                    CONFIG.SUPABASE.URL,
+                    CONFIG.SUPABASE.ANON_KEY
+                );
+
+                // Écouter les changements d'état
+                supabaseClient.auth.onAuthStateChange((event, session) => {
+                    addLog(`Changement d'état auth: ${event}`);
+                    if (session) {
+                        currentUser = session.user;
+                        addLog(`Utilisateur connecté: ${session.user.email}`);
+                    } else {
+                        currentUser = null;
+                        addLog('Utilisateur déconnecté');
+                    }
+                });
+            }
+        });
+    </script>
+</body>
+</html> 

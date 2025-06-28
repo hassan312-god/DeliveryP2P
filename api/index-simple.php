@@ -10,6 +10,20 @@ if ($_SERVER['REQUEST_METHOD'] === 'OPTIONS') {
     exit();
 }
 
+// DEBUG TEMPORAIRE - Afficher l'URI reçu
+if (isset($_GET['debug'])) {
+    echo json_encode([
+        'REQUEST_URI' => $_SERVER['REQUEST_URI'],
+        'SCRIPT_NAME' => $_SERVER['SCRIPT_NAME'],
+        'PHP_SELF' => $_SERVER['PHP_SELF'],
+        'PATH_INFO' => $_SERVER['PATH_INFO'] ?? 'null',
+        'QUERY_STRING' => $_SERVER['QUERY_STRING'] ?? 'null',
+        'REQUEST_METHOD' => $_SERVER['REQUEST_METHOD'],
+        'timestamp' => date('c')
+    ], JSON_PRETTY_PRINT);
+    exit();
+}
+
 // Charger l'autoloader
 require_once __DIR__ . '/../vendor/autoload.php';
 

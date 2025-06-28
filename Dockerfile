@@ -67,6 +67,7 @@ RUN echo '<VirtualHost *:80>' > /etc/apache2/sites-available/000-default.conf \
     && echo '    # Alias pour les tests API directs' >> /etc/apache2/sites-available/000-default.conf \
     && echo '    Alias /health /var/www/html/api/health-test.php' >> /etc/apache2/sites-available/000-default.conf \
     && echo '    Alias /test-connection /var/www/html/api/test-connection.php' >> /etc/apache2/sites-available/000-default.conf \
+    && echo '    Alias /debug /var/www/html/api/debug.php' >> /etc/apache2/sites-available/000-default.conf \
     && echo '</VirtualHost>' >> /etc/apache2/sites-available/000-default.conf
 
 # Exposition du port

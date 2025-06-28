@@ -1,183 +1,79 @@
-# Supabase CLI
+# 🚚 DeliveryP2P - Frontend Only
 
-[![Coverage Status](https://coveralls.io/repos/github/supabase/cli/badge.svg?branch=main)](https://coveralls.io/github/supabase/cli?branch=main) [![Bitbucket Pipelines](https://img.shields.io/bitbucket/pipelines/supabase-cli/setup-cli/master?style=flat-square&label=Bitbucket%20Canary)](https://bitbucket.org/supabase-cli/setup-cli/pipelines) [![Gitlab Pipeline Status](https://img.shields.io/gitlab/pipeline-status/sweatybridge%2Fsetup-cli?label=Gitlab%20Canary)
-](https://gitlab.com/sweatybridge/setup-cli/-/pipelines)
+Interface utilisateur pour l'application de livraison peer-to-peer.
 
-[Supabase](https://supabase.io) is an open source Firebase alternative. We're building the features of Firebase using enterprise-grade open source tools.
+## 📁 Structure
 
-This repository contains all the functionality for Supabase CLI.
+```
+deliveryp2p/
+├── frontend/         # Interface utilisateur
+│   ├── index.html    # Page d'accueil
+│   ├── js/           # JavaScript
+│   ├── css/          # Styles
+│   ├── assets/       # Images et ressources
+│   ├── auth/         # Pages d'authentification
+│   ├── admin/        # Interface administrateur
+│   ├── client/       # Interface client
+│   └── courier/      # Interface livreur
+└── README.md         # Documentation
+```
 
-- [x] Running Supabase locally
-- [x] Managing database migrations
-- [x] Creating and deploying Supabase Functions
-- [x] Generating types directly from your database schema
-- [x] Making authenticated HTTP requests to [Management API](https://supabase.com/docs/reference/api/introduction)
+## 🚀 Démarrage
 
-## Getting started
-
-### Install the CLI
-
-Available via [NPM](https://www.npmjs.com) as dev dependency. To install:
-
+### Option 1 : Serveur Python
 ```bash
-npm i supabase --save-dev
+cd frontend
+python3 -m http.server 3000
 ```
 
-To install the beta release channel:
-
+### Option 2 : Serveur Node.js
 ```bash
-npm i supabase@beta --save-dev
+cd frontend
+npx serve .
 ```
 
-When installing with yarn 4, you need to disable experimental fetch with the following nodejs config.
+### Option 3 : Extension Live Server (VS Code)
+- Installez l'extension "Live Server"
+- Clic droit sur `frontend/index.html`
+- Sélectionnez "Open with Live Server"
 
-```
-NODE_OPTIONS=--no-experimental-fetch yarn add supabase
-```
+## 🌐 Pages disponibles
 
-> **Note**
-For Bun versions below v1.0.17, you must add `supabase` as a [trusted dependency](https://bun.sh/guides/install/trusted) before running `bun add -D supabase`.
+- **Accueil:** `index.html`
+- **Authentification:** `auth/login.html`, `auth/register.html`
+- **Client:** `client/dashboard.html`, `client/create-request.html`
+- **Livreur:** `courier/dashboard.html`, `courier/available-requests.html`
+- **Admin:** `admin/dashboard.html`, `admin/users.html`
+- **Utilitaires:** `chat.html`, `call.html`, `qrcode.html`
 
-<details>
-  <summary><b>macOS</b></summary>
+## 🛠️ Technologies
 
-  Available via [Homebrew](https://brew.sh). To install:
+- **HTML5** - Structure
+- **CSS3** - Styles et animations
+- **JavaScript (Vanilla)** - Interactivité
+- **Responsive Design** - Compatible mobile
 
-  ```sh
-  brew install supabase/tap/supabase
-  ```
+## 📱 Fonctionnalités
 
-  To install the beta release channel:
-  
-  ```sh
-  brew install supabase/tap/supabase-beta
-  brew link --overwrite supabase-beta
-  ```
-  
-  To upgrade:
+- ✅ Interface responsive
+- ✅ Navigation fluide
+- ✅ Formulaires validés
+- ✅ Notifications toast
+- ✅ QR Code génération
+- ✅ Chat et appel intégrés
+- ✅ Dashboard multi-rôles
 
-  ```sh
-  brew upgrade supabase
-  ```
-</details>
+## 🔧 Configuration
 
-<details>
-  <summary><b>Windows</b></summary>
+Le fichier `frontend/config.js` contient toutes les configurations :
+- URLs des APIs
+- Paramètres d'authentification
+- Configuration des services
 
-  Available via [Scoop](https://scoop.sh). To install:
+## 📞 Support
 
-  ```powershell
-  scoop bucket add supabase https://github.com/supabase/scoop-bucket.git
-  scoop install supabase
-  ```
+Pour toute question ou problème, consultez la documentation ou ouvrez une issue.
 
-  To upgrade:
+---
 
-  ```powershell
-  scoop update supabase
-  ```
-</details>
-
-<details>
-  <summary><b>Linux</b></summary>
-
-  Available via [Homebrew](https://brew.sh) and Linux packages.
-
-  #### via Homebrew
-
-  To install:
-
-  ```sh
-  brew install supabase/tap/supabase
-  ```
-
-  To upgrade:
-
-  ```sh
-  brew upgrade supabase
-  ```
-
-  #### via Linux packages
-
-  Linux packages are provided in [Releases](https://github.com/supabase/cli/releases). To install, download the `.apk`/`.deb`/`.rpm`/`.pkg.tar.zst` file depending on your package manager and run the respective commands.
-
-  ```sh
-  sudo apk add --allow-untrusted <...>.apk
-  ```
-
-  ```sh
-  sudo dpkg -i <...>.deb
-  ```
-
-  ```sh
-  sudo rpm -i <...>.rpm
-  ```
-
-  ```sh
-  sudo pacman -U <...>.pkg.tar.zst
-  ```
-</details>
-
-<details>
-  <summary><b>Other Platforms</b></summary>
-
-  You can also install the CLI via [go modules](https://go.dev/ref/mod#go-install) without the help of package managers.
-
-  ```sh
-  go install github.com/supabase/cli@latest
-  ```
-
-  Add a symlink to the binary in `$PATH` for easier access:
-
-  ```sh
-  ln -s "$(go env GOPATH)/bin/cli" /usr/bin/supabase
-  ```
-
-  This works on other non-standard Linux distros.
-</details>
-
-<details>
-  <summary><b>Community Maintained Packages</b></summary>
-
-  Available via [pkgx](https://pkgx.sh/). Package script [here](https://github.com/pkgxdev/pantry/blob/main/projects/supabase.com/cli/package.yml).
-  To install in your working directory:
-
-  ```bash
-  pkgx install supabase
-  ```
-
-  Available via [Nixpkgs](https://nixos.org/). Package script [here](https://github.com/NixOS/nixpkgs/blob/master/pkgs/development/tools/supabase-cli/default.nix).
-</details>
-
-### Run the CLI
-
-```bash
-supabase bootstrap
-```
-
-Or using npx:
-
-```bash
-npx supabase bootstrap
-```
-
-The bootstrap command will guide you through the process of setting up a Supabase project using one of the [starter](https://github.com/supabase-community/supabase-samples/blob/main/samples.json) templates.
-
-## Docs
-
-Command & config reference can be found [here](https://supabase.com/docs/reference/cli/about).
-
-## Breaking changes
-
-We follow semantic versioning for changes that directly impact CLI commands, flags, and configurations.
-
-However, due to dependencies on other service images, we cannot guarantee that schema migrations, seed.sql, and generated types will always work for the same CLI major version. If you need such guarantees, we encourage you to pin a specific version of CLI in package.json.
-
-## Developing
-
-To run from source:
-
-```sh
-# Go >= 1.22
-go run . help
-```
+**🎉 Interface prête à l'utilisation !**

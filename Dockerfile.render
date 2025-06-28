@@ -1,5 +1,5 @@
-# Dockerfile optimisé pour Render - LivraisonP2P
-# Adapté à la structure frontend/ + public/
+# Dockerfile optimisé pour Render
+# Version simplifiée pour éviter les problèmes Alpine
 
 FROM php:8.2-apache
 
@@ -22,9 +22,7 @@ COPY --from=composer:latest /usr/bin/composer /usr/bin/composer
 
 # Configuration Apache
 RUN a2enmod rewrite
-
-# Configuration du DocumentRoot pour servir depuis frontend/
-RUN echo "DocumentRoot /var/www/html/frontend" > /etc/apache2/sites-available/000-default.conf
+RUN echo "DocumentRoot /var/www/html/public" > /etc/apache2/sites-available/000-default.conf
 
 # Définition du répertoire de travail
 WORKDIR /var/www/html
@@ -38,7 +36,6 @@ RUN composer install --optimize-autoloader --no-dev --no-interaction
 # Configuration des permissions
 RUN chown -R www-data:www-data /var/www/html \
     && chmod -R 755 /var/www/html/storage \
-    && chmod -R 755 /var/www/html/frontend \
     && mkdir -p storage/{logs,cache,qr_codes,uploads}
 
 # Configuration PHP pour la production
@@ -46,15 +43,6 @@ RUN echo "memory_limit = 256M" >> /usr/local/etc/php/conf.d/custom.ini \
     && echo "max_execution_time = 30" >> /usr/local/etc/php/conf.d/custom.ini \
     && echo "display_errors = Off" >> /usr/local/etc/php/conf.d/custom.ini \
     && echo "log_errors = On" >> /usr/local/etc/php/conf.d/custom.ini
-
-# Configuration Apache pour les routes API
-RUN echo '<Directory /var/www/html>' >> /etc/apache2/sites-available/000-default.conf \
-    && echo '    RewriteEngine On' >> /etc/apache2/sites-available/000-default.conf \
-    && echo '    RewriteCond %{REQUEST_URI} ^/api/' >> /etc/apache2/sites-available/000-default.conf \
-    && echo '    RewriteRule ^api/(.*)$ /api/index.php [QSA,L]' >> /etc/apache2/sites-available/000-default.conf \
-    && echo '    RewriteCond %{REQUEST_URI} ^/health$' >> /etc/apache2/sites-available/000-default.conf \
-    && echo '    RewriteRule ^health$ /api/health.php [QSA,L]' >> /etc/apache2/sites-available/000-default.conf \
-    && echo '</Directory>' >> /etc/apache2/sites-available/000-default.conf
 
 # Exposition du port
 EXPOSE 80

@@ -1,12 +1,10 @@
 services:
-  # Service principal - API Backend
+  # Service principal - API Backend avec Frontend
   - type: web
     name: deliveryp2p-api
     runtime: docker
     plan: starter
-    buildCommand: composer install --optimize-autoloader --no-dev --no-interaction
-    startCommand: php -S 0.0.0.0:$PORT -t public
-    healthCheckPath: /api/health
+    healthCheckPath: /health
     envVars:
       # Configuration de l'application
       - key: APP_NAME
